@@ -1,0 +1,1196 @@
+<html>
+<head>
+<title>Dell OSD System Config</title>
+
+<link href="Wizard.css" type="text/css" rel="stylesheet">
+        
+<HTA:APPLICATION ID="AppForm" APPLICATIONNAME="AppForm" ICON="dell.ico"
+    	SCROLL="NO"
+		SELECTION="no"
+		INNERBORDER="no"
+		BORDER="normal"
+		SINGLEINSTANCE="no"
+		SYSMENU="no"
+		MAXIMIZEBUTTON="no"
+		MINIMIZEBUTTON="no"
+		CAPTION="YES"
+		VERSION="09.09.2015"/>
+   
+<style type="text/css">
+
+.style2 {
+	border-top-style: solid;
+	border-top-width: 1px;
+}
+
+.style6 {
+	font-size:15px;
+	color:navy;
+	font-weight:
+}
+</style>
+</head>
+
+<script language="vbscript" type="text/vbscript">
+
+' Declare Global Variables
+Const ForReading = 1
+Const ForWriting = 2
+Const ForAppending = 8
+
+Dim objFSO, RootDrv, oShell, sScriptDir
+Dim sSettingsIniFile, sDesktop, sLaptop
+Dim appsDoc
+Dim bExit
+bExit=False
+
+Dim arrCommands
+Dim sArrayExistingApps()
+Dim sScriptName
+
+Set objFSO = CreateObject("Scripting.FileSystemObject")
+Set oShell = CreateObject("WScript.Shell") 
+
+RootDrv = oShell.ExpandEnvironmentStrings ("%SYSTEMDRIVE%")
+s_WinDir = oShell.ExpandEnvironmentStrings ("%WINDIR%")
+
+sScriptDir = Replace(location.pathname,"%20"," ")
+sScriptName= objFSO.GetFileName(sScriptDir)
+
+sScriptDir = Left(sScriptDir, InStrRev(sScriptDir, "\"))
+
+sParentDir=objFSO.GetParentFolderName(sScriptDir)
+
+' set the OSDSettings.ini file path
+	sSettingsIniFile =sParentDir & "\cfg\" & "OSDSettings.ini"			
+' set the Apps.xml file path
+	sAppsXmlFile =sParentDir & "\cfg\" & "Apps.xml"
+
+' set the OSDProfile.ini file path
+	arrCommands = Split(AppForm.commandLine, chr(34))	
+    For i = 0 to (Ubound(arrCommands) - 1) Step 1
+       
+        If Len(Trim(arrCommands(i))) > 0 Then
+
+        	If InStr(1,Trim(arrCommands(i)),"CREATEPROFILE",1) > 0 Then
+        		
+        		If Len(Trim(arrCommands(i+1))) > 0 Then
+        			sOSDProfileIniFile = Trim(arrCommands(i+1))
+        			bArgINI=True
+        		End If
+        	End if
+        End If
+        
+    Next
+    
+' check if running from TS 
+	If Not bArgINI Then
+		
+		sMsg="Not supported scenario. Install your applications via your MDT/SCCM TASK SEQUENCE. Skipping Applications Install."
+		
+		If Script_Started_from_TS() = True Then	
+				WriteLog sMsg
+				MsgBox sMsg,16+4096
+		Else
+			sLogPath=sParentDir	&"\"
+			sOSDProfileIniFile =  sParentDir &"\" & "OSDProfile.ini"
+			
+		End If
+		
+	End If
+	
+' set log file
+	LogFile ="OSDCustomizer.log"
+	strSafeDate= DatePart("yyyy",Date) & Right ("0" & DatePart("m",Date),2) & Right("0" &DatePart("d", Date),2)
+	strSafeTime= Right ("0" & Hour(Now),2) & Right ("0" & Minute(Now),2) & Right ("0" & Second(Now),2)
+	strDateTime=strSafeDate &"-" & strSafeTime
+	LogFileNameBackup ="OSDCustomizer-" & strDateTime & ".log" 
+	
+	'set log path
+			
+		LogFile = sLogPath & LogFile
+		
+	'backup old log if exist
+	If objFSO.FileExists (LogFile) Then
+		WriteLog "====================================================================================="
+		WriteLog "Script " & sScriptName & " execution is started."
+		WriteLog "====================================================================================="
+	Else
+		
+		'create a new log file
+			Set oLog= objFSO.CreateTextFile(LogFile, True)
+			oLog.WriteLine("[LOG]:" & " Date: " & Date & " " & Time  & " Message: " &  "=====================================================================================")
+			oLog.WriteLine("[LOG]:" & " Date: " & Date & " " & Time  & " Message: " &  "Script " & sScriptName & " execution is started.")
+			oLog.WriteLine("[LOG]:" & " Date: " & Date & " " & Time  & " Message: " &  "=====================================================================================")
+			
+			oLog.Close
+	
+	End If	
+	
+On Error Resume Next
+	Initialize
+
+Sub Window_onload
+
+	If bExit = True Then
+			Self.close	
+	Else
+		WriteLog "Loading the form..."
+		CenterWindow 780,580
+		MyHeaderTitle.InnerHTML = "Application Installation Form"
+		WriteLog "Getting default applications list from Apps.xml file..."
+		GetAppList
+	End If
+	
+End Sub	
+
+
+Sub Initialize
+	
+	WriteLog "Initialization form..."
+	WriteLog "Cheching for required ini files..."
+	CheckforFile sSettingsIniFile
+	If bExit = True Then
+		Writelog "====================================================================================="
+		WriteLog "Script " & sScriptName & " excution has been aborted due to missing required file: " & sSettingsIniFile
+		Writelog "====================================================================================="
+		Exit Sub
+	End If
+	
+	CheckforFile sAppsXmlFile
+	If bExit = True Then
+		Writelog "====================================================================================="
+		WriteLog "Script " & sScriptName & " excution has been aborted due to missing required file: " & sAppsXmlFile
+		Writelog "====================================================================================="
+		Exit Sub
+	End If
+	
+		
+    GetConfig
+    Set appsDoc = CreateObject("Microsoft.XMLDOM") 
+	appsDoc.async = False 
+
+	'load apps.xml
+	appsDoc.load(sAppsXmlFile)
+
+End Sub
+
+Sub CheckforFile(myFile)
+	Dim sMsg
+	sMsg="Error: File missing: " & myFile & "."
+
+	If Not objFSO.FileExists(myFile) Then
+		WriteLog sMsg
+		MsgBox sMsg,16+4096
+		
+		bExit=True
+		self.close
+		Exit Sub
+	Else
+		WriteLog "Found File : " & myFile
+	End If
+End Sub
+
+Sub CenterWindow( widthX, heightY )
+    self.ResizeTo widthX, heightY 
+    self.MoveTo (screen.Width - widthX)/2, (screen.Height - heightY)/2
+End Sub
+
+
+Sub GetConfig
+	'get configuration settings from OSDSettings.ini
+	WriteLog "Getting configuration settings from file: " & sSettingsIniFile
+	
+	'check if installing APPS
+	sAppsInstall=UCase(Trim(ReadIni(sSettingsIniFile, "Applications","AppsInstall")))
+	WriteLog "Section [Applications] Property AppsInstall= " & sAppsInstall
+	if sAppsInstall <> "YES" then
+		WriteLog "Property AppsInstall is not set to YES. Skipping Applications Install."
+		MsgBox sMsg,16+4096
+		self.close
+		Exit Sub
+	end if
+End Sub
+
+
+
+Function checkForSection(file, section)
+	
+	Dim ini, line
+	checkForSection=False
+	
+	On Error Resume Next
+
+		Set ini = objFSO.OpenTextFile(file, ForReading, False)
+		Do While ini.AtEndOfStream = False
+	  		line = Trim(ini.ReadLine)
+	  		If LCase(line) = "[" & LCase(section) & "]" Then
+	  			checkForSection = True
+	   		End If
+	 	Loop 
+	 	ini.Close
+
+End Function
+
+Function ReadIni(file, section, item)
+
+		Dim line, equalpos, leftstring, ini
+
+		ReadIni = ""
+		file = Trim(file)
+		item = Trim(item)
+
+		On Error Resume Next
+	
+		Set ini = objFSO.OpenTextFile( file, 1, False)
+		
+		If Err then
+			Err.Clear
+			Exit Function
+		End if
+		On Error Goto 0
+
+		Do While (not ini.AtEndOfStream)
+			line = ini.ReadLine
+			line = Trim(line)
+			If LCase(line) = "[" & LCase(section) & "]" and (not ini.AtEndOfStream) Then
+				line = ini.ReadLine
+				line = Trim(line)
+				Do While Left( line, 1) <> "["
+					'If InStr( 1, line, item & "=", 1) = 1 Then
+					equalpos = InStr(1, line, "=", 1 )
+					If equalpos > 0 Then
+						leftstring = Left(line, equalpos - 1 )
+						leftstring = Trim(leftstring)
+						If LCase(leftstring) = LCase(item) Then
+							ReadIni = Mid( line, equalpos + 1 )
+							ReadIni = Trim(ReadIni)
+							Exit Do
+						End If
+					End If
+
+					If ini.AtEndOfStream Then Exit Do
+					line = ini.ReadLine
+					line = Trim(line)
+				Loop
+				Exit Do
+			End If
+		Loop
+		ini.Close
+
+End Function
+
+' WRITEINI ( file, section, item, myvalue )
+' file = path and name of ini file
+' section = [Section] must not be in brackets
+' item = the variable to write;
+' myvalue = the myvalue to assign to the item.
+'
+Sub WriteIni( file, section, item, myvalue )
+Dim in_section, section_exists, item_exists, wrote
+Dim itemtrimmed, temp_ini, read_ini, write_ini
+Dim line, linetrimmed, equalpos, TristateFalse, leftstring 
+	
+	in_section = False
+	section_exists = False
+	item_exists = ( ReadIni( file, section, item ) <> "" )
+
+	wrote = False
+	file = Trim(file)
+	itemtrimmed = Trim(item)
+	myvalue = Trim(myvalue)
+
+	temp_ini = sScriptDir & objFSO.GetTempName
+
+	Set read_ini = objFSO.OpenTextFile( file, 1, True, TristateFalse )
+	Set write_ini = objFSO.CreateTextFile( temp_ini, False)
+
+	While read_ini.AtEndOfStream = False
+		line = read_ini.ReadLine
+		linetrimmed = Trim(line)
+		If wrote = False Then
+			If LCase(line) = "[" & LCase(section) & "]" Then
+				section_exists = True
+				in_section = True
+			ElseIf InStr( line, "[" ) = 1 Then
+				in_section = False
+			End If
+		End If
+
+		If in_section Then
+			If item_exists = False Then
+				write_ini.WriteLine line
+				write_ini.WriteLine item & "=" & myvalue
+				wrote = True
+				in_section = False
+			Else
+				equalpos = InStr(1, line, "=", 1 )
+				If equalpos > 0 Then
+					leftstring = Left(line, equalpos - 1 )
+					leftstring = Trim(leftstring)
+					If LCase(leftstring) = LCase(item) Then
+						write_ini.WriteLine itemtrimmed & "=" & myvalue
+						wrote = True
+						in_section = False
+					End If
+				End If
+				If Not wrote Then
+					write_ini.WriteLine line
+				End If
+			End If
+		Else
+				equalpos = InStr(1, line, "=", 1 )
+				If equalpos > 0 Then
+					leftstring = Left(line, equalpos - 1 )
+					leftstring = Trim(leftstring)
+					rightsring=Right (line, Len(line) - (Len(leftstring)+1) )
+					If LCase(leftstring) = LCase(item) then
+						If Len(rightsring) =0  Then
+							'do nothing
+						End if
+					Else
+						write_ini.WriteLine line
+					End If
+				Else
+					write_ini.WriteLine line
+				End If
+			
+		End If
+	Wend
+
+	If section_exists = False Then ' section doesn't exist
+		write_ini.WriteLine
+		write_ini.WriteLine "[" & section & "]"
+		write_ini.WriteLine itemtrimmed & "=" & myvalue
+
+	End If
+
+	read_ini.Close
+	write_ini.Close
+	If objFSO.FileExists(file) then
+		objFSO.DeleteFile file, True
+	End if
+	objFSO.CopyFile temp_ini, file, true
+	objFSO.DeleteFile temp_ini, True
+
+End Sub
+
+Sub GetAppList
+	Dim i
+	On Error Resume Next
+	
+	
+	'Parse each node on the apps.xml
+	For each node in appsDoc.DocumentElement.childNodes
+		
+		sAppID = ""
+		sAppName= ""
+		
+		sAppID = node.getAttribute("ID")
+		sAppName= node.selectSingleNode("Name").text
+		sAppSupportedSys=node.selectSingleNode("SupportedSystems").text
+		
+		
+		'check if apps to be installed the target system
+		 vAddApps=False
+								 
+		 Select Case UCase(sAppSupportedSys)
+		 				 		
+		 	Case "NOTEBOOKS"
+		 		If UCase(GetType)= UCase("Laptop") Or UCase(GetType)= UCase("Notebook") Then
+		 			vAddApps=True
+		 		End If
+		 		
+		 	Case "DESKTOPS"
+		 		If UCase(GetType)= UCase("Desktop") Then
+		 			vAddApps=True
+		 		End If
+		 		
+		 	Case "SERVERS"
+		 		If UCase(GetType)= UCase("Server") Then
+		 			vAddApps=True
+		 		End If	
+		 
+		 	Case Else
+		 			vAddApps=True
+	
+		 End Select		
+		
+		If vAddApps=True then
+			Set objOption = Document.createElement("OPTION")   
+			objOption.Text = sAppName
+			objOption.Value = sAppID
+			document.getElementById("DefaultList").Add(objOption)
+			WriteLog "Adding to default list, application name: " & sAppName
+			
+		End If
+	Next
+
+End Sub
+
+Sub CheckSelectedList
+	document.getElementById("RemoveButton").disabled=False
+	document.getElementById("AddButton").disabled=True
+End Sub
+
+Sub CheckDefaultList
+	document.getElementById("RemoveButton").disabled=True
+	document.getElementById("AddButton").disabled=False
+End Sub
+
+Sub RemoveItemFromList
+' The Remove button has been selected, we need to see what what
+' highlighted And remove it from the list.
+	
+	For Each objItem in SelectedList.Options
+        If objItem.Selected Then 'iterates through list selected by user
+            strSelected = strSelected & objItem.Value & ","
+            objItem.RemoveNode 'removing from drop down
+            
+        End If
+    Next
+    
+    'add the selected items to the default list
+    	
+   		strArrayTemp=Split(strSelected,",")
+		
+   		For i=0 To UBound(strArrayTemp)	 
+   			           
+        	sAppID=strArrayTemp(i)
+        	If sAppID <>"" Then
+        	
+	        	sAppName=""
+	        	
+	        	'Parse each node on the apps.xml
+				For each node in appsDoc.DocumentElement.childNodes
+									
+					If sAppID= node.getAttribute("ID") Then
+					
+						sAppName= node.selectSingleNode("Name").text
+												
+						Set objOption = Document.createElement("OPTION")    
+						objOption.Text = sAppName
+						objOption.Value = sAppID
+						
+						document.getElementById("DefaultList").disabled=False
+						document.getElementById("DefaultList").Add(objOption)
+						
+						Exit For
+					
+					End If
+			
+				Next	        	        	
+	        		
+			End If
+			
+		Next
+		
+End Sub
+
+Sub AddItemToList
+' The Add button has been selected, we need to see what is
+' highlighted And add it to the list.
+	
+	'iterates through list selected by user
+	For Each objItem in DefaultList.Options
+        If objItem.Selected Then
+            strSelected = strSelected & objItem.Value & ","
+            'removing from drop down Removed List
+            objItem.RemoveNode 
+        End If
+    Next
+         
+    'add the selected items to the default list
+    	
+   		strArrayTemp=Split(strSelected,",")
+		
+   		For i=0 To UBound(strArrayTemp)
+        	sAppID=strArrayTemp(i)
+        	If sAppID <>"" Then
+	        	sAppName=""
+	        	'Parse each node on the apps.xml
+				For each node in appsDoc.DocumentElement.childNodes				
+					If sAppID= node.getAttribute("ID") Then
+						sAppName= node.selectSingleNode("Name").text						
+						Set objOption = Document.createElement("OPTION")    
+						objOption.Text = sAppName
+						objOption.Value = sAppID
+						document.getElementById("SelectedList").disabled=False
+						document.getElementById("SelectedList").Add(objOption)
+						Exit For
+					End If
+			
+				Next	        	        	
+	        		
+			End If
+			
+		Next
+
+End Sub
+
+Sub ButtonContinueClick
+	Dim j
+	strMsg="Please confirm your selection by clicking Yes or No?" & vbLf
+    vOSDProfileUpdated=False
+       
+    If Msgbox(strMsg,4+vbSystemModal,"Confirmation?") = vbYES  Then
+    
+    		document.getElementById("RemoveButton").disabled=True
+			document.getElementById("AddButton").disabled=True
+			'document.getElementById("ButtonBack").disabled=True
+			document.getElementById("buttonContinue").disabled=True
+			document.body.style.cursor = "wait"	
+			
+			WriteLog "User selection confirmed"
+			WriteLog "Creating/Updating the OSDProfile.ini file..."
+			
+			'checking if any exising application already set in OSDProfile.ini
+			Set objFSO = CreateObject("Scripting.FileSystemObject")
+	
+			If objFSO.FileExists(sOSDProfileIniFile) Then
+				
+				'get previous applications list index and value
+			
+				Set objTextFile = objFSO.OpenTextFile(sOSDProfileIniFile, ForReading)
+				
+				Do Until objTextFile.AtEndOfStream
+					
+					line = Trim(objTextFile.Readline)
+					
+					If InStr(1, UCase(line), ucase("Selected="), 1 ) > 0 Then
+						selectedSection = Trim(Right(line, Len(line)-9))
+						
+					End If
+				Loop
+								
+				objTextFile.Close
+			
+				If Len(selectedSection) > 0 Then
+							n=0
+							bStop=False
+							
+							Do While bStop=False
+							
+								 	If n=0 Then
+										ReDim sArrayExistingApps(n)
+									Else
+										ReDim Preserve sArrayExistingApps(n)
+									End If
+									
+									If Len(n)=1 Then
+										sExistingAppProperty1="Application00" & n+1
+									End If
+									
+									If Len(n)=2 Then
+										sExistingAppProperty2="Application0" & n+1
+									End If
+									
+									If Len(n)=3 Then
+										sExistingAppProperty3="Application" & n+1
+									End If
+									
+									sArrayExistingApps(n)=Trim(ReadIni(sOSDProfileIniFile, selectedSection, sExistingAppProperty1))
+									
+									
+									If Len(sArrayExistingApps(n))=0 Then
+										
+										sArrayExistingApps(n)= Trim(ReadIni(sOSDProfileIniFile, selectedSection, sExistingAppProperty2))
+										
+										If Len (sArrayExistingApps(n))=0 Then
+											
+											sArrayExistingApps(n)= Trim(ReadIni(sOSDProfileIniFile, selectedSection, sExistingAppProperty3))
+									
+											If Len (sArrayExistingApps(n))=0 Then
+												bStop=True
+												
+											Else
+												WriteLog "Reading from OSDProfile.ini " & sExistingAppProperty3 & "=" & sArrayExistingApps(n)
+												n=n+1
+											End If
+											
+										Else
+											
+											WriteLog "Reading from OSDProfile.ini " & sExistingAppProperty2 & "=" & sArrayExistingApps(n)
+											n=n+1
+											
+										End If	
+										
+									Else
+										WriteLog "Reading from OSDProfile.ini " & sExistingAppProperty1 & "=" & sArrayExistingApps(n)
+										n=n+1
+										
+									End If
+							Loop
+							
+						
+				Else
+					MsgBox "Not found Selected Section"
+				End If
+			End if
+			
+			'Update settings on OSDProfile.ini file
+			WriteLog "Adding selected settings to file: " & sOSDProfileIniFile
+			bAppExist="NO"
+			
+			If n > 0 Then
+				indexExistingApps=UBound(sArrayExistingApps)
+			Else
+				indexExistingApps=0
+			End If
+			
+			iArrayAPPs=indexExistingApps
+			
+			if document.getElementById("SelectedList").length>0 Then
+								
+					For j = 0 to document.getElementById("SelectedList").options.length - 1
+	        			
+		            	sAppID=document.getElementById("SelectedList").options(j).value
+
+        				If sAppID <>"" Then
+			        	
+					        	'Parse each node on the apps.xml
+								For each node in appsDoc.DocumentElement.childNodes	
+											bAppExist="NO"
+											If sAppID= node.getAttribute("ID") Then
+														If indexExistingApps > 0 Then
+																
+																	If UBound(sArrayExistingApps)> 0 Then
+																				
+																				
+																				For n=0 To UBound(sArrayExistingApps)
+																				
+																					 If UCase(sArrayExistingApps(n))= UCase(sAppID) Then
+																					 													 
+																					 	WriteLog sAppID & " already found on existing OSDProfile.ini."
+																					 	bAppExist="YES"
+																					 	Exit For
+																					 End If
+																						 
+																				Next
+																		
+																				If bAppExist="YES" Then
+																					Exit For
+																					
+																				Else
+																	
+																					iArrayAPPs=iArrayAPPs + 1
+																		
+																				End If
+														
+																	End If
+																	
+															Else
+															
+																iArrayAPPs=iArrayAPPs + 1
+																
+															End If
+															
+									
+												UpdateOSDProfile sAppID, iArrayAPPs
+									
+												Exit For
+												
+										End If
+										
+								Next	
+	    				End If         
+	        		Next
+	        		
+				End If
+			
+			WriteLog "Closing the HTA Form..."
+			window.Close
+			WriteLog "====================================================================================="
+			WriteLog "Script " & sScriptName & " execution is completed."
+			WriteLog "====================================================================================="
+	End If
+
+
+End Sub   
+
+Sub ButtonBackClick
+	
+	'Execute the previous screen hta page
+	
+	window.Close
+End Sub   
+
+
+Sub UpdateOSDProfile(sAppiD, indexNum)
+
+
+	Set objFSO = CreateObject("Scripting.FileSystemObject")
+	
+	If objFSO.FileExists(sOSDProfileIniFile) Then
+		
+		Set objTextFile = objFSO.OpenTextFile(sOSDProfileIniFile, ForAppending, True)
+		
+	Else
+	
+		Set objTextFile = objFSO.CreateTextFile (sOSDProfileIniFile, True)
+		
+		objTextFile.WriteLine "[Main]"
+		WriteLog "Adding line: [Main]"
+		
+		objTextFile.WriteLine "Selected=Apps_only"
+		WriteLog "Adding line: Selected=Apps_only"
+		
+		objTextFile.WriteLine ""
+		objTextFile.WriteLine "[Apps_only]"
+		WriteLog "Adding line: [Apps_only]"
+
+	End If
+	
+	If Len(indexNum)= 1 Then 
+	 sAppLabel="Application00" & indexNum
+	Elseif Len(indexNum)= 2 Then 
+	 sAppLabel="Application0" & indexNum
+	ElseIf Len(indexNum)= 1 Then 
+	 sAppLabel="Application" & indexNum
+	End If
+	
+	objTextFile.WriteLine sAppLabel & "=" & sAppiD
+	WriteLog "Adding line: " & sAppLabel & "=" & sAppiD
+
+		
+	objTextFile.Close
+	
+End Sub
+
+
+
+
+
+Function IsLaptop( myComputer )
+' This Function checks if a computer has a battery pack.
+' One can assume that a computer with a battery pack is a laptop.
+'
+' Argument:
+' myComputer   [string] name of the computer to check,
+'                       or "." for the local computer
+' Return value:
+' True if a battery is detected, otherwise False
+'
+    On Error Resume Next
+    Set objWMIService = GetObject( "winmgmts://" & myComputer & "/root/cimv2" )
+    Set colItems = objWMIService.ExecQuery( "Select * from Win32_Battery", , 48 )
+    IsLaptop = False
+    For Each objItem in colItems
+        IsLaptop = True
+    Next
+    If Err Then Err.Clear
+    On Error Goto 0
+End Function 
+
+
+'Function GetType
+'	GetType=""
+	
+'	strComputer = "."
+'	If IsLaptop( strComputer )= True Then
+'		GetType="LAPTOP"
+'	Else
+'		GetType="DESKTOP"
+'	End If
+	
+	'get Asset and service tag
+	
+'		Set objWMIService = GetObject("winmgmts:" _
+'	    		& "{impersonationLevel=impersonate}!\\" & strComputer & "\root\cimv2")
+		
+		'get the Service tag and Asset Tag from BIOS
+		
+'		Set colSMBIOS = objWMIService.ExecQuery("Select * from Win32_SystemEnclosure",,48)
+'		For Each objSMBIOS in colSMBIOS
+'	    	sServiceTag=objSMBIOS.SerialNumber
+'	    	sAssetTag=objSMBIOS.SMBIOSAssetTag
+'		Next	
+	
+'End Function
+
+
+Function GetType
+
+	Dim sManufact
+	Dim sModel
+	Dim objWMIService
+	Dim colSettings
+	Dim Chassis_Type
+	Dim objComputer
+	Dim objInstance
+	Dim colSMBIOS
+	Dim objSMBIOS
+	
+	
+	GetType=""
+	
+	strComputer = "."
+	Set objWMIService = GetObject("winmgmts:{impersonationLevel=impersonate}!\\" & strComputer & "\root\cimv2")
+	Set colSettings = objWMIService.ExecQuery("SELECT * FROM Win32_ComputerSystem")
+	
+	For Each objComputer in colSettings
+		'get manufacturer 
+		sManufact=objComputer.Manufacturer
+	
+		'Check if manufacturer is Dell then get the model name
+		If InStr (1,UCase(sManufact), "DELL",1) > 0 Then
+		
+				sModel=UCase(objComputer.Model)
+				If InStr (1,UCase(sModel), "OPTIPLEX",1) > 0 Then
+					Chassis_Type="DESKTOP"
+					GetType=Chassis_Type
+					
+				End If
+	
+				If InStr (1,UCase(sModel), "LATITUDE",1) > 0 Then
+					Chassis_Type="LAPTOP"
+					GetType=Chassis_Type
+					
+				End If
+				
+				If InStr (1,UCase(sModel), "PRECISION",1) > 0 Then
+					
+						If InStr (1,UCase(sModel), "WORKSTATION",1) > 0 Then
+							Chassis_Type="DESKTOP"
+							
+						ElseIf InStr (1,UCase(sModel), "PRECISION M",1) > 0 Then
+							Chassis_Type="LAPTOP"
+						Else
+							Chassis_Type="DESKTOP"
+						End If
+						
+						GetType=Chassis_Type
+				End If
+				
+				If InStr (1,UCase(sModel), "XPS L",1) > 0 Then
+					Chassis_Type="LAPTOP"
+					GetType=Chassis_Type
+					
+				End If
+				
+		End If
+		
+	Next
+	
+	'get Asset and service tag
+	strComputer = "."
+		Set objWMIService = GetObject("winmgmts:" _
+	    		& "{impersonationLevel=impersonate}!\\" & strComputer & "\root\cimv2")
+		
+		'get the Service tag and Asset Tag from BIOS
+		
+		Set colSMBIOS = objWMIService.ExecQuery("Select * from Win32_SystemEnclosure",,48)
+		For Each objSMBIOS in colSMBIOS
+	    	sServiceTag=objSMBIOS.SerialNumber
+	    	sAssetTag=objSMBIOS.SMBIOSAssetTag
+		Next	
+		
+	If GetType <> "" Then
+		
+		Exit function
+	End If
+	
+	'if Model not detected then use a wmi query based on Win32_SystemEnclosure
+	Set objWMIService = GetObject("winmgmts:" _
+	    		& "{impersonationLevel=impersonate}!\\" & strComputer & "\root\cimv2")
+	
+	Set colSettings = objWMIService.InstancesOf("Win32_SystemEnclosure")
+	
+	For each objInstance in colSettings
+
+		If objInstance.ChassisTypes(0) = 12 or objInstance.ChassisTypes(0) = 21 then
+			' Ignore docking stations and set it to laptop
+			GetType = "LAPTOP" 
+		Else
+	
+			If not IsNull(objInstance.SMBIOSAssetTag) then
+				sAssetTag = Trim(objInstance.SMBIOSAssetTag)
+			End If
+			
+			Select Case objInstance.ChassisTypes(0)
+			
+				Case "8", "9", "10", "11", "12", "14", "18", "21"
+					GetType = "LAPTOP" 
+				Case "3", "4", "5", "6", "7","13", "15", "16"
+					GetType = "DESKTOP" 
+				Case "23"
+					GetType = "SERVER" 
+				Case Else
+				'unknown but I will set it to Desktop by default
+					GetType = "DESKTOP"
+			End Select
+	
+		End if
+
+	Next
+	
+End Function
+
+' --------------------------------------------
+' if scripting object "Microsoft.SMS.TSEnvironment" can be created
+' then Returnvalue = true and Object is created
+' else Returnvalue = false
+' --------------------------------------------
+Function Script_Started_from_TS
+	
+    Err.Clear
+	On Error Resume Next
+	Script_Started_from_TS = False
+    Set oTaskSequence = CreateObject("Microsoft.SMS.TSEnvironment")
+	If Err.Number  <> 0 Then
+		WriteLog "Not running from Task sequence."
+		On Error Goto 0
+		Script_Started_from_TS = False		
+		Exit Function
+	End If
+	On Error Goto 0
+	Script_Started_from_TS  = True
+
+End Function
+
+Function WriteLog(sLogMsg)
+
+		Dim sTime, sDate, sTempMsg, oLog, oConsole
+
+		On Error Resume Next		
+		' Suppress messages containing password
+		If not strDebug then
+			If Instr(1, sLogMsg, "password", 1) > 0 then
+				sLogMsg = "<Message containing password has been suppressed>"
+			End if
+		End if
+
+		' Populate the variables to log
+			sTempMsg = "[LOG]:" & " Date: " & Date & " " & Time  & " Message: " &  sLogMsg
+			
+		' If debug, echo the message
+		If strDebug then
+			Set oConsole = objFSO.GetStandardStream(1) 
+			oConsole.WriteLine sLogMsg
+		End if
+
+		' Create the log entry
+		Err.Clear
+		Set oLog = objFSO.OpenTextFile(LogFile, ForAppending, True)
+		
+		If Err then
+			Err.Clear
+			Exit Function
+		End if
+		oLog.WriteLine sTempMsg
+		oLog.Close
+		Err.Clear
+
+End Function
+
+</script>
+<!--
+' // //Prevent the abort of the HTA page if pressing Alt-F4 
+-->
+ <SCRIPT LANGUAGE="JavaScript">  
+function document.onkeydown() {   
+      var alt=window.event.altKey;  
+      if (alt && event.keyCode==115) {  
+           event.keyCode=0;  
+          event.cancelBubble=true;  
+           return false;  
+           }  
+     } 
+ </SCRIPT> 
+
+<body Language="VBScript">
+        <!-- Create a 2 x 3 table to place all of our content in. Makes resizing of windows easier -->
+        <table cellpadding="0" cellspacing="0" border="0" width="100%" style="height: 100%;">
+			
+			<!-- Header of Wizard -->
+            <tr valign="top" >
+                <td colspan="2">
+
+					<div id="MyHeader" class="HeaderArea" >
+					
+					<img id="bannerImage"  class="HeaderBackground" src="header-image.png">
+					<img id=MyHeaderIcon class="HeaderIcon" src="logo.png">
+					<span id=MyHeaderTitle class="HeaderTitle"></span>
+					
+					</div>
+				</td>
+            </tr>
+
+            <!-- Content Area of Wizard -->
+            <tr>
+				<td  align=left valign=top style="background-color: #F0F0F0; ">
+					<div id="MyNavigationArea" class="NavigationArea" style="background-color: #F0F0F0; padding: 8px 0px 0px 0px;">
+
+						<!-- Navigation will go HERE! -->
+						
+						<table style="width: 100%;">
+							<tr>
+								<td style="width:1px;">
+								<!-- 	<img src="DeployWiz_logo.png">-->
+								</td>
+							<!--	<td style="width: 120px;"><span class=Larger>Localisation & Computer Details</span></td>-->
+							
+							</tr>
+						</table>
+						
+					</div>
+				</td>
+                        
+            
+                <td halign="left" valign=top style="background-color: #F0F0F0; width: expression( Math.max(documentElement.offsetWidth, 80));">
+                 
+                 
+                    <div id="MyContentArea" class="ContentArea" style="background-color: #F0F0F0; padding: 16px;"> 
+                        <span style="width: 100%;">
+                               	
+                            <table  cellpadding="1" cellspacing="1" border="0" width="100%" style="height: 100%;">   
+								
+								<tr>
+									<td colspan="5" style="height:10" class="style6" >Applications Selection </td>
+								</tr>
+								<tr>
+									<td colspan="2" style="height: 2%" class="style6">&nbsp </td>
+                                </tr>
+
+								<tr >
+									<td colspan="3" style="height: 36" class="style8" >
+										<table style="width: 100%">
+											<tr>
+												<td colspan="3" ><strong>
+													Please select the applications to install from the available applications list:<br>&nbsp;use the &lt;Add&gt; or 
+												&lt;Remove&gt; buttons to add&nbsp; or remove any application from the selected list.
+												</strong></td>
+											</tr>
+											
+										</table>
+									</td>		
+								</tr>
+								<tr>
+									<td colspan="3" >
+										<table style="width: 100%">
+											<tr>
+												<td>&nbsp;</td>
+												<td>&nbsp;</td>
+												<td>&nbsp;</td>
+											</tr>
+										</table>
+									</td>		
+								</tr>
+								<tr>
+									<td  width="48%" style="height: 19px">
+										<table  style="width: 100%">
+											<tr>
+												<td style="height: 19px"><strong>&nbsp;Applications List </strong></td>
+											</tr>
+										</table>
+									</td>
+									<td width="4%" style="height: 19px"></td>
+									<td width="48%" style="height: 19px">
+										<table style="width: 100%">
+											<tr>
+												<td style=""><strong>&nbsp;Your Selection</strong></td>
+											</tr>
+										</table>
+									</td>
+								</tr>
+								<tr >
+									<td width="48%">
+										<table style="width: 100%; height: 100%;">
+											<tr>
+												<td>
+													<SELECT MULTIPLE style="width: 100%; height: 100%;" name="DefaultList" onclick=CheckDefaultList>
+													</SELECT>
+												</td>
+											</tr>
+										</table>
+									</td>
+									<td width="4%">
+										<table style="width: 100%; height: 100%;">
+											<tr>
+												<td >&nbsp;</td>
+											</tr>
+											<tr>
+												<td >&nbsp;</td>
+											</tr>
+											<tr>
+												<td >&nbsp;</td>
+												<td >&nbsp;</td>
+												<td valign="middle">
+												<input name="AddButton" type="image" disabled="true" style="width: 20px" src="SelectItem.jpg"   onclick=AddItemToList tabindex="17"></td>
+												<td >&nbsp;</td>
+												<td >&nbsp;</td>
+											</tr>
+											<tr>
+												<td >&nbsp;</td>
+											</tr>
+											<tr>
+												<td>&nbsp;</td>
+											</tr>
+											<tr>
+												<td >&nbsp;</td>
+											</tr>
+											<tr>
+												<td >&nbsp;</td>
+											</tr>
+											<tr>
+												<td >&nbsp;</td>
+												<td >&nbsp;</td>
+												<td valign="middle">
+												<input name="RemoveButton" type="image" disabled="true" style="width: 20px" src="DeselectItem.jpg" value="&lt;&lt;--"  onclick=RemoveItemFromList tabindex="17"></td>
+												<td >&nbsp;</td>
+												<td >&nbsp;</td>
+											</tr>
+											<tr>
+												<td>&nbsp;</td>
+											</tr>
+											<tr>
+												<td >&nbsp;</td>
+											</tr>
+											<tr>
+												<td>&nbsp;</td>
+											</tr>
+											
+										</table>
+									</td>
+									<td width="48%">
+										<table style="width: 100%; height: 100%;">
+												<tr>
+													<td>
+														<SELECT MULTIPLE="multiple" disabled="true" style="width: 100%; height: 100%; " name="SelectedList" onclick=CheckSelectedList>
+							 							
+														</SELECT>
+													</td>
+												</tr>
+										</table>
+									</td>
+								</tr>
+						</table>
+					</span>
+                   </div>
+                      
+                </td>            
+            </tr>
+            
+   <!-- Footer of Wizard -->
+   <!--
+            <tr valign="middle"  >
+            <td class="CommandArea" id="RightWizardButtons" align="left" colspan="1" style="height: 60" >
+                  <!--  <button accesskey=C type=submit style="VISIBILITY:Hidden"id=buttonBack onclick=ButtonBackClick ><U>B</U>ack</button> -->
+          <!--      </td>
+              
+                <td class="CommandArea" id="RightWizardButtons" align="right" colspan="1" style="height: 60" >
+                    <button accesskey=C type=submit id=buttonContinue onclick=ButtonContinueClick ><U>C</U>ontinue</button>
+                </td>
+            </tr>
+            --> 
+            <!-- Footer of Wizard -->
+			<tr valign="Top"  >
+				<td colspan="2" class="CommandArea" id="RightWizardButtons" align="right">
+                    <button accesskey=C type=submit id=buttonContinue onclick=ButtonContinueClick ><U>C</U>ontinue</button>
+                </td>
+            </tr>
+            
+
+        </table>
+    </body>
+</html>

@@ -1,0 +1,80 @@
+<html>
+<head>
+<title>Splash</title>
+<HTA:APPLICATION 
+	ID="ObjSplash"
+	WINDOWSTATE="maximize"
+	BORDER="none"
+	INNERBORDER="no"
+	SHOWINTASKBAR="no"
+	SCROLL="no"
+	APPLICATIONNAME="Splash"
+	NAVIGABLE="yes"
+	ICON="dell.ico"
+	/>
+
+<script language="javascript" src="progress.js"></script>
+
+<style type="text/css">
+.style1 {
+	color: #102C40;
+	font-family: "Arial";
+	size=7;
+}
+.style2 {
+	color: #102C40;
+	font-family: "Arial";
+	font-size: small;
+}
+</style>
+</head>
+<body Language="VBScript" style="background-color: #FFFFFF;">
+	
+	
+	<table align="center"; border="0">
+	<colgroup span="1">
+		<col width="100%"></col>
+	</colgroup>
+	
+	<tr>
+		<td align="center"><img border="0" src="dell.bmp"></td>
+	</tr>
+	
+	<tr>
+		<td><H1 class="style1" align="center">OSDCustomizer</H1>
+	
+	</tr>
+	
+			<script LANGUAGE="VBScript">
+				Dim i
+			    arrCommands = Split(ObjSplash.commandLine, "/")
+			    
+			    i= Ubound(arrCommands)
+			    sMsg=""
+			    
+			    If i > 0 Then
+			    	sMsg=arrCommands(i)
+			    	document.write("<tr>")
+			    	document.write("<td class=""style2"" align=""center"">" & sMsg)
+			    	document.write("</td>")
+			    	document.write("</tr>")
+				Else
+					document.write("<tr>")
+					document.write("<td class=""style2"" align=""center"">Please wait while executing required tasks....")
+					document.write("</td>")
+					document.write("</tr>")
+				End If
+			
+			</script>
+
+	<tr>
+		<td align="center">
+			<script type="text/javascript">
+				var bar1= createBar(300,18,'white',1,'Black','#005285',80,7,3,"");
+			</script>
+		</td>
+	</tr>
+	
+</table>
+</body>
+</html>

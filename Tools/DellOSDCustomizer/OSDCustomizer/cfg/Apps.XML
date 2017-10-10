@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Applications>
+	<Application ID="App1">
+		<Name></Name>
+		<Description></Description>
+		<SupportedSystems></SupportedSystems>
+		<ModelName></ModelName>
+		<PNPId></PNPId>
+		<WorkingDirectory></WorkingDirectory>
+		<Commandline></Commandline>
+		<Reboot></Reboot>
+	</Application>
+</Applications>

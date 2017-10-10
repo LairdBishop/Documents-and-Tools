@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Applications>
+	<Application ID="App1">
+		<Name>Adobe Reader EN</Name>
+		<Description>Adobe Reader English version 11</Description>
+		<SupportedSystems>*</SupportedSystems>
+		<ModelName></ModelName>
+		<PNPId></PNPId>
+		<WorkingDirectory>C:\DellOSDCustomizer\Applications\AdobeReader</WorkingDirectory>
+		<Commandline>Install.cmd</Commandline>
+		<Reboot>false</Reboot>
+	</Application>
+	<Application ID="App2">
+		<Name>CONTROLVAULT_SECURITY</Name>
+		<Description>DELL CONTROLVAULT</Description>
+		<SupportedSystems>Notebooks</SupportedSystems>
+		<ModelName>Latitude E7450</ModelName>
+		<PNPId></PNPId>
+		<WorkingDirectory>C:\DellOSDCustomizer\Applications\SECURITY\JW22F</WorkingDirectory>
+		<Commandline>CVHCI64.MSI /QN</Commandline>
+		<Reboot>true</Reboot>
+	</Application>
+	<Application ID="App3">
+		<Name>PROSET</Name>
+		<Description>INTEL PROSET/WIRELESS SOFTWARE</Description>
+		<SupportedSystems>Notebooks</SupportedSystems>
+		<ModelName></ModelName>
+		<PNPId>PCI\VEN_8086&amp;DEV_0082</PNPId>
+ 		<PNPId>PCI\VEN_8086&amp;DEV_0083</PNPId>
+		<WorkingDirectory>C:\DellOSDCustomizer\Applications\Proset</WorkingDirectory>
+		<Commandline>Setup.EXE /S</Commandline>
+		<Reboot>true</Reboot>
+	</Application>
+</Applications>

@@ -1,0 +1,4871 @@
+<html>
+<head>
+<title>Dell OSD System Config</title>
+
+<link href="Wizard.css" type="text/css" rel="stylesheet">
+        
+<HTA:APPLICATION ID="OSDFrontEnd" APPLICATIONNAME="OSDFrontEnd" ICON="dell.ico"
+    	SCROLL="no"
+		SELECTION="no"
+		INNERBORDER="no"
+		BORDER="normal"
+		SINGLEINSTANCE="no"
+		SYSMENU="no"
+		MAXIMIZEBUTTON="NO"
+		MINIMIZEBUTTON="no"
+		CAPTION="YES"
+		windowState="maximize"
+		VERSION="20.03.2017"/>
+   
+<style type="text/css">
+
+.style2 {
+	border-top-style: solid;
+	border-top-width: 1px;
+}
+
+.style6 {
+	font-size:15px;
+	color:navy;
+	font-weight:
+}
+
+.style10 {
+	
+	color:blue;
+	font-weight:solid
+}
+
+</style>
+
+<script language="vbscript" type="text/vbscript">
+
+' Declare Global Variables
+Const ForReading = 1
+Const ForWriting = 2
+Const ForAppending = 8
+
+Dim objFSO
+Dim objWMIService
+Dim RootDrv
+Dim SystRoot
+Dim s_WinDir
+Dim oShell
+Dim sScriptDir
+Dim sParentDir
+Dim arrCommands
+Dim oTaskSequence
+
+Dim sSettingsIniFile
+Dim sLocalesXmlFile
+Dim sOSDProfileIniFile
+Dim sDesktop
+Dim sLaptop
+Dim sServer
+Dim sConstruct
+Dim strComputer
+
+Dim sLocationName, sRegionName
+Dim bMUI
+Dim sSelectedLang
+Dim sSystemLocale, sUserLocale, sMultiInputLocalePerLocation, sInputLocale, sKeybLayoutID, sUILanguage, sCountryID, sTimeZone
+
+Dim sComputername, sPrefix, sSuffix
+Dim sDomain, sDomainOU, sDomainUser, sDomainUserPassword
+Dim sIPAddress, sGatewayAddress, sSubNetMask, sPrimDNSAddress, sSecDNSAddress
+Dim sAssetTag, sServiceTag
+
+Dim SkipLocationName, SkipRegion
+Dim SkipProfileName
+
+Dim SkipRegionalSettings
+Dim SkipSystemLocale
+Dim SkipUserLocale
+Dim SkipInputLocale
+Dim SkipUILanguage
+Dim SkipCountry
+Dim SkipTimeZone
+
+Dim SkipComputerName
+Dim sJoin
+Dim sWorkgroup
+Dim SkipDomainJoin
+Dim SkipDomainName
+Dim SkipDomainOU
+Dim SkipDomainUser
+Dim SkipDomainUserPassword
+
+Dim sAppsPerLocation
+Dim sArrayLocApps()
+Dim sArrayCommonApps()
+Dim bStop
+
+Dim sAppsPerProfile
+Dim sArrayProfileApps()
+
+Dim PromptForWorkgroup
+Dim sDefaultWorkgroup
+
+Dim PromptForDomain
+Dim sDefaultDomain, sDefaultDomainReadonly
+Dim PromptForDomainOU
+Dim sDefaultDomainOU, sDefaultDomainOUReadonly
+Dim PromptForDomainUser
+Dim sDefaultDomainUser
+Dim PromptForDomainUserPassword
+Dim sDefaultDomainUserPassword
+
+Dim PromptForIPAddress
+Dim PromptForSubNetMask
+Dim PromptForGatewayAddress
+Dim PromptForDNS
+
+Dim sRunCommand
+
+Dim sDesktopOUName, sLaptopOUName
+
+Dim bArgINI
+bArgINI=False
+Dim i
+Dim bExit
+bExit=False
+Dim bFoundCommonApps
+Dim bFoundLocApps
+Dim bFoundProfileApps
+
+bFoundCommonApps=False
+bFoundLocApps=False
+bFoundProfileApps=False
+
+Dim sScriptName
+Dim iSMDT
+
+'This is for IP addresses Pattern check
+Dim strByteMatch, strIpMatch, strPattern 
+strByteMatch = "(25[0-5]|2[0-4]\d|[01]?\d\d?)"
+strIpMatch = strByteMatch & "\." & strByteMatch & "\." & strByteMatch & _
+"\.(" & strByteMatch & "|(" & strByteMatch & "/" & strByteMatch & "))"
+strPattern = "^" & strIpMatch & "(," & strIpMatch & ")*$"
+
+Set objFSO = CreateObject("Scripting.FileSystemObject")
+Set oShell = CreateObject("WScript.Shell") 
+
+RootDrv = oShell.ExpandEnvironmentStrings ("%SYSTEMDRIVE%")
+s_WinDir = oShell.ExpandEnvironmentStrings ("%WINDIR%")
+
+sScriptDir = Replace(location.pathname,"%20"," ")
+sScriptName= objFSO.GetFileName(sScriptDir)
+
+sScriptDir = Left(sScriptDir, InStrRev(sScriptDir, "\"))
+
+sParentDir=objFSO.GetParentFolderName(sScriptDir)
+
+' set the OSDSettings.ini file path
+    sSettingsIniFile =sParentDir & "\cfg\" & "OSDSettings.ini"		
+' set the Locales.XML file path
+	sLocalesXmlFile =sParentDir & "\cfg\" & "Locales.xml"
+	
+' set the OSDProfile.ini file path
+	arrCommands = Split(OSDFrontEnd.commandLine, chr(34))
+    For i = 0 to (Ubound(arrCommands) - 1) Step 1
+       
+        If Len(Trim(arrCommands(i))) > 0 Then
+
+        	If InStr(1,Trim(arrCommands(i)),"CREATEPROFILE",1) > 0 Then
+        		
+        		If Len(Trim(arrCommands(i+1))) > 0 Then
+        			sOSDProfileIniFile = Trim(arrCommands(i+1))
+        			bArgINI=True
+        		End If
+        	End if
+        End If
+        
+    Next
+
+
+'check if MDT.FLG exists then MDT running from UNC path
+If objFSO.FileExists(sScriptDir & "\MDT.FLG") Then
+	' This is an MDT running from UNC path
+	'get the UNC path for deplyoment share
+	Set OSD_oFile = objFSO.OpenTextFile(sScriptDir & "\MDT.FLG", OSD_ForReading, True)
+	While OSD_oFile.AtEndOfStream = False
+		MDT_sSCRIPTROOT = OSD_oFile.ReadLine
+		IsMDT="YES"
+	Wend
+	OSD_oFile.Close
+	
+Else
+
+	'check if MDT Local drive or USB media /share drive letter 
+
+	MDT_sSCRIPTROOT =RootDrv & "\Deploy\Scripts"
+
+	If Not (objFSO.FileExists(MDT_sSCRIPTROOT & "\media.tag") And objFSO.FileExists(MDT_sSCRIPTROOT & "\LiteTouch.wsf")) Then
+		'WScript.Echo "MDT SCRIPTS folder not found on local drive. checking parent folder of current script directory"
+		IsMDT="NO"
+		MDT_sSCRIPTROOT=GetTheParent(sScriptDir)	
+			
+		If objFSO.FileExists(MDT_sSCRIPTROOT & "\LiteTouch.wsf") Then
+			'WScript.Echo "MDT SCRIPTROOT=" & MDT_sSCRIPTROOT
+			IsMDT="YES"
+		Else
+			'WScript.Echo "MDT SCRIPTS folder not found. Checking one level up from the current script directory"
+			MDT_sSCRIPTROOT= GetTheParent(MDT_sSCRIPTROOT)
+			If objFSO.FileExists(MDT_sSCRIPTROOT & "\LiteTouch.wsf") Then
+			'	WScript.Echo "MDT SCRIPTROOT=" & MDT_sSCRIPTROOT
+				IsMDT="YES"
+			Else
+			'	WScript.Echo "No MDT SCRIPTS folder found."
+				IsMDT="NO"
+			End If
+		End If
+	Else
+		'WScript.Echo "MDT SCRIPTS folder found on local drive. MDT SCRIPTROOT=" & MDT_sSCRIPTROOT
+		IsMDT="YES"
+	End If
+
+End If
+
+' check if running from TS	
+	If Not bArgINI Then
+
+		If Script_Started_from_TS() = True Then	
+		
+				If iSMDT="YES" Then
+					sLogPath = RootDrv & "\MININT\SMSOSD\OSDLOGS" & "\"
+				Else
+					' we assume SCCM TS
+					sLogPath = oTaskSequence("_SMSTSLogPath") & "\"
+				End If
+				
+				If Not objFSO.FolderExists(sLogPath) Then ' if Logpath not exist then use the Windows\temp folder
+					If Not objFSO.FolderExists(s_WinDir & "\Temp") Then
+						objFSO.CreateFolder(s_WinDir & "\Temp")
+					End If
+					sLogPath=s_WinDir & "\Temp\"
+					
+				End If
+				
+				sOSDProfileIniFile = sLogPath & "OSDProfile.ini"
+				
+		Else
+			sLogPath=sParentDir	&"\"
+			sOSDProfileIniFile =  sParentDir &"\" & "OSDProfile.ini"
+			
+		End If
+		
+	End If
+
+
+' set log file
+	LogFile ="OSDCustomizer.log"
+	strSafeDate= DatePart("yyyy",Date) & Right ("0" & DatePart("m",Date),2) & Right("0" &DatePart("d", Date),2)
+	strSafeTime= Right ("0" & Hour(Now),2) & Right ("0" & Minute(Now),2) & Right ("0" & Second(Now),2)
+	strDateTime=strSafeDate &"-" & strSafeTime
+	LogFileNameBackup ="OSDCustomizer-" & strDateTime & ".log" 
+	
+	'set log path
+	
+	LogFile = sLogPath & LogFile
+		
+	'backup old log if exist
+	If objFSO.FileExists (LogFile) Then
+			WriteLog "====================================================================================="
+			WriteLog "Script " & sScriptName & " execution is started."
+			WriteLog "====================================================================================="
+	Else
+	
+		'create a new log file
+			Set oLog= objFSO.CreateTextFile(LogFile, True)
+			oLog.WriteLine("[LOG]:" & " Date: " & Date & " " & Time  & " Message: " &  "=====================================================================================")
+			oLog.WriteLine("[LOG]:" & " Date: " & Date & " " & Time  & " Message: " &  "Script " & sScriptName & " execution is started.")
+			oLog.WriteLine("[LOG]:" & " Date: " & Date & " " & Time  & " Message: " &  "=====================================================================================")
+			
+			oLog.Close
+	End If
+	
+		
+On Error Resume Next
+	Initialize
+
+Sub Window_onload
+ If bExit = True Then
+	Self.close		
+ Else
+ 
+	WriteLog "Loading the form..."
+	SizeWindow
+	MyHeaderTitle.InnerHTML = "OSD System Configuration"
+
+	If SkipRegionalSettings ="YES" Then
+		'SizeWindow 900,500
+	Else
+		GetAllLocales
+		PopulateDefMuiList
+	End If
+	
+	If Not SkipLocationName ="YES" Then
+		GetLocation
+		
+		
+	Else
+		If Not SkipRegion ="YES" Then
+			GetRegion
+		End If
+		
+		If Not SkipComputerName ="YES" Then
+			GetComputerName	
+		End If
+		
+		If SkipDomainJoin ="YES" Then
+		
+		Else
+		
+			If Not SkipDomainName="YES" Then
+				If PromptForDomain="YES" Then
+					GetDefaultDomain
+					GetDetailsFromDefaultDomain
+				Else
+				
+					GetDomain
+					GetDetailsFromDomain
+				End If
+			Else
+			
+				If Not SkipDomainOU="YES" Then
+					GetOU
+				End If
+				
+			End If
+		End If
+		
+	End If
+	
+	If sAppsPerProfile="YES" Then
+		GetProfile
+	End If
+
+
+	WriteLog "HTA Form loaded and waiting for user selection..."
+ 
+ End If
+		
+End Sub	
+
+Sub Initialize
+
+	WriteLog "Initialization form..."
+	WriteLog "Checking for required ini files..."
+	CheckforFile sSettingsIniFile
+	If bExit = True Then
+		Writelog "====================================================================================="
+		WriteLog "Script " & sScriptName & " excution has been aborted due to missing required file: " & sSettingsIniFile
+		Writelog "====================================================================================="
+		Exit Sub
+	End If
+	
+	CheckforFile sLocalesXmlFile
+	If bExit = True Then
+		Writelog "====================================================================================="
+		WriteLog "Script " & sScriptName & " excution has been aborted due to missing required file: " & sLocalesXmlFile
+		Writelog "====================================================================================="
+		Exit Sub
+	End If
+	
+	WriteLog "Getting system Chassis_Type =" & GetType		
+	GetConfig
+
+End Sub
+
+
+Sub CheckforFile(myFile)
+	
+	Dim sMsg
+	sMsg="Error: File missing: " & myFile & "."
+
+	If Not objFSO.FileExists(myFile) Then
+		WriteLog sMsg
+		MsgBox sMsg,16+4096
+		bExit=True
+		self.close
+		Exit Sub
+	Else
+		WriteLog "Found File : " & myFile
+	End If
+	
+End Sub
+Sub SizeWindow
+    self.ResizeTo screen.Width, screen.Height - 100
+    self.MoveTo 0, 0
+    
+End Sub
+
+Sub CenterWindow( widthX, heightY )
+
+    self.ResizeTo widthX, heightY 
+    self.MoveTo (screen.Width - widthX)/2, (screen.Height - heightY)/2
+End Sub
+
+Sub GetConfig
+
+	'get configuration settings from OSDSettings.ini
+	WriteLog "Getting configuration settings from file: " & sSettingsIniFile
+	
+	'get SkipLocationName
+	SkipLocationName=UCase(Trim(ReadIni(sSettingsIniFile, "General","SkipLocationName")))
+	If SkipLocationName="" Then SkipLocationName="YES"
+	WriteLog "Section [General] Property SkipLocationName= " & SkipLocationName
+	
+	SkipRegion=UCase(Trim(ReadIni(sSettingsIniFile, "General","SkipRegion")))
+	If SkipRegion="" Then SkipRegion="YES"
+	WriteLog "Section [General] Property SkipRegion= " & SkipRegion
+	
+	'get MultiInpuLicale setting
+	sMultiInputLocalePerLocation=UCase(Trim(ReadIni(sSettingsIniFile, "General","MultiInputLocalePerLOCATION")))
+	If sMultiInputLocalePerLocation="" Then sMultiInputLocalePerLocation="NO"
+	WriteLog "Section [General] Property MultiInputLocalePerLocation= " & sMultiInputLocalePerLocation
+	
+	'get SkipRegionalSettings
+	SkipRegionalSettings=UCase(Trim(ReadIni(sSettingsIniFile, "General", "SkipRegionalSettings")))
+	WriteLog "Section [General] Property SkipRegionalSettings= " & SkipRegionalSettings
+	
+	If SkipRegionalSettings="YES" Then
+		SkipUserLocale="YES"
+		SkipSystemLocale="YES"
+		SkipInputLocale="YES"
+		SkipUILanguage="YES"
+		SkipCountry="YES"
+		SkipTimeZone="YES"
+	Else
+	
+		SkipUILanguage=UCase(Trim(ReadIni(sSettingsIniFile, "General", "SkipUILanguage")))
+		WriteLog "Section [General] Property SkipUILanguage= " & SkipUILanguage
+		
+		SkipUserLocale=UCase(Trim(ReadIni(sSettingsIniFile, "General", "SkipUserLocale")))
+		sUserLocale=UCase(Trim(ReadIni(sSettingsIniFile, "General", "UserLocale")))
+		WriteLog "Section [General] Property SkipUserLocale= " & SkipUserLocale
+		
+		SkipSystemLocale=UCase(Trim(ReadIni(sSettingsIniFile, "General", "SkipSystemLocale")))
+		sSystemLocale=UCase(Trim(ReadIni(sSettingsIniFile, "General", "SystemLocale")))
+		WriteLog "Section [General] Property SkipSystemLocale= " & SkipSystemLocale
+		
+		SkipInputLocale=UCase(Trim(ReadIni(sSettingsIniFile, "General", "SkipInputLocale")))
+		WriteLog "Section [General] Property SkipInputLocale= " & SkipInputLocale
+		
+		
+		SkipCountry=UCase(Trim(ReadIni(sSettingsIniFile, "General", "SkipCountry")))
+		WriteLog "Section [General] Property SkipCountry= " & SkipCountry
+		
+		SkipTimeZone=UCase(Trim(ReadIni(sSettingsIniFile, "General", "SkipTimeZone")))
+		WriteLog "Section [General] Property SkipTimeZone= " & SkipTimeZone
+		
+		If SkipUserLocale="YES"And SkipSystemLocale="YES" And _
+		 SkipInputLocale="YES" And SkipUILanguage="YES" And _
+		 SkipCountry="YES" And SkipTimeZone="YES" Then
+			SkipRegionalSettings="YES"
+		End If
+		
+	End If
+	
+	
+	'get SkipComputerName
+	SkipComputerName=UCase(Trim(ReadIni(sSettingsIniFile, "General", "SkipComputerName")))
+	If SkipComputerName="" Then SkipComputerName="YES"
+	WriteLog "Section [General] Property SkipComputerName= " & SkipComputerName
+	
+	'get NIC details
+	PromptForIPAddress=UCase(Trim(ReadIni(sSettingsIniFile, "General", "PromptForIPAddress")))
+	PromptForGatewayAddress=UCase(Trim(ReadIni(sSettingsIniFile, "General", "PromptForGatewayAddress")))
+	PromptForDNS=UCase(Trim(ReadIni(sSettingsIniFile, "General", "PromptForDNS")))
+	
+	' get value for <%Desktop%/%Laptop%> OU name
+	sDesktopOUName=UCase(Trim(ReadIni(sSettingsIniFile, "<%Desktop%/%Laptop%>", "%Desktop%")))
+	sLaptopOUName=UCase(Trim(ReadIni(sSettingsIniFile, "<%Desktop%/%Laptop%>", "%Laptop%")))
+	
+	'get SkipDominJoin
+	SkipDomainJoin=UCase(Trim(ReadIni(sSettingsIniFile, "General", "SkipDomainJoin")))
+	WriteLog "Section [General] Property SkipDomainJoin= " & SkipDomainJoin
+	If SkipDomainJoin="" Then SkipDomainJoin="YES"
+	
+	If SkipDomainJoin ="YES" Then
+		SkipDomainName="YES"
+		SkipDomainOU="YES"
+		SkipDomainUser="YES"
+		SkipDomainUserPassword="YES"
+		
+	Else
+	
+		SkipDomainName=UCase(Trim(ReadIni(sSettingsIniFile, "General", "SkipDomainName")))
+		WriteLog "Section [General] Property SkipDomainName= " & SkipDomainName
+	
+		
+		SkipDomainOU=UCase(Trim(ReadIni(sSettingsIniFile, "General", "SkipDomainOU")))
+		WriteLog "Section [General] Property SkipDomainOU= " & SkipDomainOU
+	
+		SkipDomainUser=UCase(Trim(ReadIni(sSettingsIniFile, "General", "SkipDomainUser")))
+		WriteLog "Section [General] Property SkipDomainUser= " & SkipDomainUser
+	
+		SkipDomainUserPassword=UCase(Trim(ReadIni(sSettingsIniFile, "General", "SkipDomainUserPassword")))
+		WriteLog "Section [General] Property SkipDomainUserPassword= " & SkipDomainUserPassword
+	
+		
+		If SkipDomainName="YES"And SkipDomainOU="YES" And _
+		 SkipDomainUser="YES" And SkipDomainUserPassword="YES" Then
+			SkipDomainJoin="YES"
+		End If
+		
+	End If
+	
+	'check if Workgroup details have to be prompted
+		PromptForWorkgroup=UCase(Trim(ReadIni(sSettingsIniFile, "General", "PromptForWorkgroup")))
+		If PromptForWorkgroup="YES" Then
+			sDefaultWorkgroup=UCase(Trim(ReadIni(sSettingsIniFile, "General", "DefaultWorkgroup")))
+			sJoin="Workgroup"
+		End If
+	
+	'check if domain details have to be prompted
+
+		PromptForDomain=UCase(Trim(ReadIni(sSettingsIniFile, "General", "PromptForDomain")))
+		If PromptForDomain="YES" Then
+			sDefaultDomain=UCase(Trim(ReadIni(sSettingsIniFile, "General", "DefaultDomain")))
+			sDefaultDomainReadOnly=UCase(Trim(ReadIni(sSettingsIniFile, "General", "DefaultDomainReadOnly")))
+			sJoin="Domain"
+		End If
+		
+		PromptForDomainOU=UCase(Trim(ReadIni(sSettingsIniFile, "General", "PromptForDomainOU")))
+		If PromptForDomainOU="YES" Then
+			sDefaultDomainOU=UCase(Trim(ReadIni(sSettingsIniFile, "General", "DefaultDomainOU")))
+			If Len(Trim(sDefaultDomainOU)) > 0 Then 
+					If InStr(1,UCase(Trim(sDefaultDomainOU)),ucase("<%Desktop%/%Laptop%>"),1) > 0 Then
+						 	If UCase(GetType)=UCase("Desktop") Then
+						 	
+							 		If Len(Trim(sDesktopOUName)) > 0 Then
+							 			sDefaultDomainOU=ReplaceString(sDefaultDomainOU,"<%Desktop%/%Laptop%>", sDesktopOUName)
+							 		Else
+							 			sDefaultDomainOU=ReplaceString(sDefaultDomainOU,"<%Desktop%/%Laptop%>", "Desktop")	
+							 		End If
+							 		
+						 	ElseIf UCase(GetType)=UCase("Laptop") Then
+							 		If Len(Trim(sDesktopOUName)) > 0 Then
+							 			sDefaultDomainOU=ReplaceString(sDefaultDomainOU,"<%Desktop%/%Laptop%>", sLaptopOUName)
+							 		Else
+							 			sDefaultDomainOU=ReplaceString(sDefaultDomainOU,"<%Desktop%/%Laptop%>", "Laptop")
+							 		End If
+							 		
+						 	End If
+					End If
+			End If
+			
+			sDefaultDomainOUReadOnly=UCase(Trim(ReadIni(sSettingsIniFile, "General", "DefaultDomainOUReadOnly")))
+			If Len(Trim(sDefaultDomainOUReadOnly)) > 0 Then 
+					If InStr(1,UCase(Trim(sDefaultDomainOUReadOnly)),ucase("<%Desktop%/%Laptop%>"),1) > 0 Then
+						 	If UCase(GetType)=UCase("Desktop") Then
+						 	
+							 		If Len(Trim(sDesktopOUName)) > 0 Then
+							 			sDefaultDomainOUReadOnly=ReplaceString(sDefaultDomainOUReadOnly,"<%Desktop%/%Laptop%>", sDesktopOUName)
+							 		Else
+							 			sDefaultDomainOUReadOnly=ReplaceString(sDefaultDomainOUReadOnly,"<%Desktop%/%Laptop%>", "Desktop")	
+							 		End If
+							 		
+						 	ElseIf UCase(GetType)=UCase("Laptop") Then
+							 		If Len(Trim(sDesktopOUName)) > 0 Then
+							 			sDefaultDomainOUReadOnly=ReplaceString(sDefaultDomainOUReadOnly,"<%Desktop%/%Laptop%>", sLaptopOUName)
+							 		Else
+							 			sDefaultDomainOUReadOnly=ReplaceString(sDefaultDomainOUReadOnly,"<%Desktop%/%Laptop%>", "Laptop")
+							 		End If
+							 		
+						 	End If
+					End If
+			End If
+			
+			sJoin="Domain"
+		End If
+		
+		PromptForDomainUser=UCase(Trim(ReadIni(sSettingsIniFile, "General", "PromptForDomainUser")))
+		If PromptForDomainUser="YES" Then
+			sDefaultDomainUser=UCase(Trim(ReadIni(sSettingsIniFile, "General", "DefaultDomainUser")))
+			sJoin="Domain"
+		End If
+		
+		PromptForDomainUserPassword=UCase(Trim(ReadIni(sSettingsIniFile, "General", "PromptForDomainUserPassword")))
+		If PromptForDomainUserPassword="YES" Then
+			sDefaultDomainUserPassword=UCase(Trim(ReadIni(sSettingsIniFile, "General", "DefaultDomainUserPassword")))
+			sJoin="Domain"
+		End If
+
+	
+	'get RunCommand
+	sRunCommand=UCase (Trim(ReadIni(sSettingsIniFile, "General", "RunCommand")))
+	
+	'check if installing APPS
+	sAppsInstall=UCase(Trim(ReadIni(sSettingsIniFile, "Applications","AppsInstall")))
+	WriteLog "Section [Applications] Property AppsInstall= " & sAppsInstall
+	
+	'check for common applications or if apps per location
+	
+	If sAppsInstall="YES" Then
+		
+		'add common applications to sArrayCommonApps
+		n=0
+		bStop=False
+		
+		Do While bStop=False
+		
+			 	If n=0 Then
+					ReDim sArrayCommonApps(n)
+				Else
+					ReDim Preserve sArrayCommonApps(n)
+				End If
+				
+				If Len(n)=1 Then
+					If  n < 9 Then 
+						sCommonAppProperty1="CommonApplication00" & n+1
+					Else
+						sCommonAppProperty1="CommonApplication0" & n+1
+					End If
+					sArrayCommonApps(n)=Trim(ReadIni(sSettingsIniFile, "Applications", sCommonAppProperty1))
+					sCommonAppProperty=sCommonAppProperty1
+				ElseIf Len(n)=2 Then
+					If  n < 99 Then 
+						sCommonAppProperty2="CommonApplication0" & n+1
+					Else
+						sCommonAppProperty2="CommonApplication" & n+1
+					End If
+					sArrayCommonApps(n)= Trim(ReadIni(sSettingsIniFile, "Applications", sCommonAppProperty2))
+					sCommonAppProperty=sCommonAppProperty2
+				Else
+					sCommonAppProperty3="CommonApplication" & n+1
+					sArrayCommonApps(n)= Trim(ReadIni(sSettingsIniFile, "Applications", sCommonAppProperty3))
+					sCommonAppProperty=sCommonAppProperty3
+				End If
+				
+						If Len (sArrayCommonApps(n))=0 Then
+							bStop=True
+
+						Else
+							WriteLog "Section [Applications] Property " & sCommonAppProperty & "=" & sArrayCommonApps(n)
+							n=n+1
+						End If
+
+				If n > 99 Then Exit do
+		Loop
+		
+		If n > o Then bFoundCommonApps=True
+		
+		
+		'check if applications per location
+			sAppsPerLocation=UCase(Trim(ReadIni(sSettingsIniFile, "Applications","AppsPerLocation")))
+			WriteLog "Section [Applications] Property AppsPerLocation= " & sAppsPerLocation
+			If sAppsPerLocation="YES" Then
+				If Not SkipLocationName="NO" Then
+					SkipLocationName="NO"
+					WriteIni sSettingsIniFile, "General", "SkipLocationName", "NO"
+					
+					WriteLog "OSDSettings.ini file Section [General] Property SkipLocationName is forced to 'NO' due to value set for AppsPerLocation=" & sAppsPerLocation
+					MsgBox  "OSDSettings.ini file Section [General] Property SkipLocationName is forced to 'NO' due to value set for AppsPerLocation=" & sAppsPerLocation,16+4096
+				End If
+			End If
+			
+			'check if applications per profile
+			sAppsPerProfile=UCase(Trim(ReadIni(sSettingsIniFile, "Applications","AppsPerProfile")))
+			WriteLog "Section [Applications] Property AppsPerProfile= " & sAppsPerProfile
+			If sAppsPerProfile="YES" Then
+				SkipProfileName="NO"
+			Else
+				SkipProfileName="YES"
+			End If
+	Else
+		SkipsAppsPerLocation="YES"
+		SkipProfileName="YES"	
+	End If
+	
+	'get the default ComputerNaming section 
+	sDesktop=UCase(Trim(ReadIni(sSettingsIniFile, "ComputerNaming","Desktop")))
+	WriteLog "Section [ComputerNaming] Property Desktop= " & sDesktop
+	
+	sLaptop=UCase(Trim(ReadIni(sSettingsIniFile, "ComputerNaming","Laptop")))
+	WriteLog "Section [ComputerNaming] Property Laptop= " & sLaptop
+	
+	sServer=UCase(Trim(ReadIni(sSettingsIniFile, "ComputerNaming","Server")))
+	WriteLog "Section [ComputerNaming] Property Server= " & sServer
+	
+	sConstruct=UCase(Trim(ReadIni(sSettingsIniFile, "ComputerNaming","Construct")))
+	WriteLog "Section [ComputerNaming] Property Construct= " & sConstruct
+	
+
+	If InStr(1,UCase(sConstruct),"SERVICE_TAG",1) > 0 Then
+		If Len(sServiceTag)= 0 Then
+			sServiceTag="<SERVICE TAG IS BLANK>"
+			SkipComputerName="NO"
+		Else
+			sComputername = GetComputerName
+		End If
+		
+	ElseIf InStr(1,UCase(sConstruct),"ASSET_TAG",1) > 0 Then
+		If Len(sAssetTag)= 0 Or UCase(Trim(sAssetTag))="NO ASSET TAG" Then
+			sAssetTag="<ASSET TAG IS BLANK>"
+			SkipComputerName="NO"
+		Else
+				sComputername = GetComputerName
+		End If
+	End If
+	
+	
+	'get OSLanguagePacks setting
+	bMUI=UCase(Trim(ReadIni(sSettingsIniFile, "OSLanguagePacks","MUI")))
+	WriteLog "Section [OSLanguagePacks] Property MUI= " & bMUI
+	
+	
+End Sub
+
+Function detect_Drive(folderToSearch,diskType)
+
+	detect_Drive=""
+	Set objWMIService = GetObject("winmgmts:\\.\root\cimv2")
+	Set objFSO = CreateObject("Scripting.FileSystemObject")
+	
+	Set colDisks = objWMIService.ExecQuery("Select * from Win32_LogicalDisk")
+	
+	'enum each drive letter, and see if folderToSearch exists on a local disk.
+	For Each objDisk In colDisks 
+		
+		If objFSO.FolderExists(objDisk.DeviceID & "\" & folderToSearch) Then
+		
+			If objDisk.DriveType = diskType Then 
+		    	detect_Drive = objDisk.DeviceID
+		    	Exit For
+		  	End If
+		  	
+		End If
+	Next
+	
+End Function
+
+Function GetType
+
+	Dim sManufact
+	Dim sModel
+	Dim objWMIService
+	Dim colSettings
+	Dim Chassis_Type
+	Dim objComputer
+	Dim objInstance
+	Dim colSMBIOS
+	Dim objSMBIOS
+	
+	
+	GetType=""
+	
+	strComputer = "."
+	Set objWMIService = GetObject("winmgmts:{impersonationLevel=impersonate}!\\" & strComputer & "\root\cimv2")
+	Set colSettings = objWMIService.ExecQuery("SELECT * FROM Win32_ComputerSystem")
+	
+	For Each objComputer in colSettings
+		'get manufacturer 
+		sManufact=objComputer.Manufacturer
+	
+	Next
+	
+	'get Asset and service tag
+	strComputer = "."
+		Set objWMIService = GetObject("winmgmts:" _
+	    		& "{impersonationLevel=impersonate}!\\" & strComputer & "\root\cimv2")
+		
+		'get the Service tag and Asset Tag from BIOS
+		
+		Set colSMBIOS = objWMIService.ExecQuery("Select * from Win32_SystemEnclosure",,48)
+		For Each objSMBIOS in colSMBIOS
+	    
+	    	If Len(Trim(objSMBIOS.SerialNumber)) > 0 Then 
+	    		sServiceTag=objSMBIOS.SerialNumber
+	    	End If
+	    	
+	    	If Len(Trim(objSMBIOS.SMBIOSAssetTag)) > 0 Then 
+	    		sAssetTag=objSMBIOS.SMBIOSAssetTag
+	    	End If
+	    
+	    	
+		Next	
+		
+	
+	'if Model not detected then use a wmi query based on Win32_SystemEnclosure
+	Set objWMIService = GetObject("winmgmts:" _
+	    		& "{impersonationLevel=impersonate}!\\" & strComputer & "\root\cimv2")
+	
+	Set colSettings = objWMIService.InstancesOf("Win32_SystemEnclosure")
+	
+	For each objInstance in colSettings
+
+		If objInstance.ChassisTypes(0) = 12 or objInstance.ChassisTypes(0) = 21 then
+			' Ignore docking stations and set it to laptop
+			GetType = "LAPTOP" 
+		Else
+	
+			If Len(Trim(objInstance.SMBIOSAssetTag)) > 0 Then
+				sAssetTag = Trim(objInstance.SMBIOSAssetTag)
+			End If
+			
+			Select Case objInstance.ChassisTypes(0)
+			
+				Case "8", "9", "10", "11", "12", "14", "18", "21"
+					GetType = "LAPTOP" 
+				Case "3", "4", "5", "6", "7","13", "15", "16"
+					GetType = "DESKTOP" 
+				Case "23"
+					GetType = "SERVER" 
+				Case Else
+				'unknown but I will set it to Desktop by default
+					GetType = "DESKTOP"
+			End Select
+	
+		End if
+
+	Next
+	
+End Function
+
+Sub GetLocation
+
+	Dim i
+	Dim objTextFile
+	Dim strValue
+	Dim line
+	Dim sSeparator
+	Dim temparray
+	Dim j
+	Dim objOption
+	
+	On Error Resume Next
+	
+	Set objFSO = CreateObject("Scripting.FileSystemObject")
+	Set objTextFile = objFSO.OpenTextFile(sSettingsIniFile, ForReading)
+			
+	do while ddLocationName.length>0
+		ddLocationName.remove(0)
+	Loop
+	
+	strValue =""
+    Set objOption = Document.createElement("OPTION")
+	objOption.Text = strValue
+	objOption.Value = strValue
+	ddLocationName.Add(objOption)
+	
+	Do Until objTextFile.AtEndOfStream
+		line = Trim(objTextFile.Readline)
+			
+		If UCase(Trim(line))= UCase("[Location]") and (not objTextFile.AtEndOfStream) then           
+			
+			line = Trim(objTextFile.Readline)
+			
+			Do While Left( line, 1) <> "["
+		
+				If Left(line,1) =";" Or Len(Trim(line))=0 Then
+					'skip this line
+				Else	
+					
+					line=mid(line,instr(line,"=")+1)
+					sSeparator=","
+					
+					If InStr (1,line, ",",1) > 0 Then 
+						sSeparator=","
+						
+					ElseIf InStr (1,line, ";",1) > 0 Then
+						sSeparator=";"
+					End If
+					
+					temparray=Split(line,sSeparator)
+					
+					For j=0 To UBound(temparray)
+						Set objOption = Document.createElement("OPTION")
+						objOption.Text = temparray(j)
+						objOption.Value = temparray(j)
+						ddLocationName.Add(objOption)
+							
+					Next
+					
+				End If
+
+				If objTextFile.AtEndOfStream Then Exit Do
+				line = objTextFile.ReadLine
+				line = Trim(line)
+				
+			Loop
+			Exit Do
+			
+		End If
+	Loop
+			
+	objTextFile.Close
+	
+	GetDetailsFromLocation
+	
+End Sub
+
+Sub GetDetailsFromLocation
+	
+	Dim i
+   	Dim strValue
+   	Dim line
+   	Dim leftstring
+   	Dim rightline
+   	Dim sDefaultInputLocale
+	Dim objTextFile
+	Dim sSeparator, equalpos
+	Dim temparray, oXMLDoc, node, sRefeName, sShortName
+	Dim j
+	Dim objOption, op, sArrayInputLocale, bInputLocaleFound
+   	
+   	strValue =""
+   	sComputername=""
+    sSuffix=""
+    sPrefix="" 
+    sUserLocale= ""
+    sSystemLocale= ""   
+	sInputLocale= ""
+	sDefaultInputLocale=""
+	sUILanguage= ""
+	sKeybLayoutID=""
+	sCountryID=""
+	sTimeZone=""
+	
+	If Not(SkipRegionalSettings)="YES" Then
+		
+		If Not(SkipUserLocale)="YES" Then
+			ddUserLocale.options(0).Selected =" "
+		End If
+		
+		If Not(SkipSystemLocale)="YES" Then
+			ddSystemLocale.options(0).Selected =" "
+		End If
+		
+		If Not(SkipInputLocale)="YES" Then
+			
+			If sMultiInputLocalePerLocation="YES" Then
+				do while document.getElementById("ddInputLocale").length>0
+					document.getElementById("ddInputLocale").remove(0)
+				Loop
+		
+				strValue =""
+		    	Set objOption = Document.createElement("OPTION")
+				objOption.Text = strValue
+				objOption.Value = strValue
+				document.getElementById("ddInputLocale").Add(objOption)
+						
+			Else
+				strValue =""
+		    	Set objOption = Document.createElement("OPTION")
+				objOption.Text = strValue
+				objOption.Value = strValue
+				document.getElementById("ddAvailableKeybLayouts").Add(objOption)
+				'ddAvailableKeybLayouts.options(0).Selected =""
+			End If
+		End If
+		
+		If Not(SkipCountry)="YES" Then
+			ddCountry.options(0).Selected =" "
+		End if
+		
+		If Not(SkipTimeZone)="YES" Then
+			ddTimeZones.options(0).Selected =" "
+		End If
+		
+		If Not(SkipUILanguage)="YES" Then
+			DefMUI.options(0).Selected =" "
+		End If
+		
+	End If	
+	
+   	If Not (SkipDomainName)="YES" Then
+   		
+   		If PromptForDomain="YES" Then
+   			document.getElementById("strPromptDomain").value=""
+ 		Else
+	   		Do while document.getElementById("DomainName").length>0
+				document.getElementById("DomainName").remove(0)
+			Loop
+		End If
+		
+	End If
+	
+	If Not (SkipDomainOU)="YES" Then
+	
+		If PromptForDomainOU="YES" Then
+   			document.getElementById("strPromptDomainOU").value=""
+ 		Else
+ 		
+			do while document.getElementById("DomainOU").length>0
+				document.getElementById("DomainOU").remove(0)
+			Loop
+			
+			Set objOption = Document.createElement("OPTION")
+			objOption.Text = strValue
+			objOption.Value = strValue
+			document.getElementById("DomainOU").Add(objOption)
+		End If
+		
+	End If
+	
+	If Not (SkipDomainUser)="YES" Then
+		If PromptForDomainUser="YES" Then
+			document.getElementById("strPromptDomainUser").value=""
+		Else
+			document.getElementById("DomainUser").value=""
+		End If
+	End If
+	    
+	If Not (SkipDomainUserPassword)="YES" Then
+		If PromptForDomainUserPassword="YES" Then
+			document.getElementById("strPromptDomainUserPwd").value=""
+			document.getElementById("strPromptDomainUserPwd2").value=""
+		Else
+			document.getElementById("DomainUserPassword").value=""
+			document.getElementById("DomainUserPassword2").value=""
+		End If
+	End If
+	
+	Set objTextFile = objFSO.OpenTextFile(sSettingsIniFile, ForReading)
+	i=0
+	
+	Do Until objTextFile.AtEndOfStream
+		
+		line = Trim(objTextFile.Readline)
+		
+		If UCase(Trim(line))= UCase("["& document.getElementById("ddLocationName").value &"]") and (not objTextFile.AtEndOfStream) then           
+			
+			sLocationName=Trim(document.getElementById("ddLocationName").value)
+			
+			line = Trim(objTextFile.Readline)
+			
+			Do While Left( line, 1) <> "["
+			
+				If Left(line,1) =";" Or Len(Trim(line))=0 Then
+					'skip this line
+				Else
+					equalpos = InStr(1, line, "=", 1 )
+					
+						If equalpos > 0 Then
+						
+							leftstring = Left(line, equalpos - 1 )
+							leftstring = Trim(leftstring)
+							rightline=Trim(Mid(line, equalpos +1))
+							
+							If UCase(leftstring)=ucase("SystemLocale") Then
+								sSystemLocale=rightline
+							End If
+							
+							If UCase(leftstring)=ucase("UserLocale") Then
+								sUserLocale=rightline
+							End If
+							
+							If UCase(leftstring)=ucase("InputLocale") Then
+								sInputLocale=rightline
+							
+								If sMultiInputLocalePerLocation="YES" Then
+									
+									sSeparator=","
+									
+									If InStr (1,sInputLocale, ",",1) > 0 Then 
+										sSeparator=","
+									ElseIf InStr (1,sInputLocale, ";",1) > 0 Then
+										sSeparator=";"
+									End If
+									
+									sArrayInputLocale=Split(sInputLocale,sSeparator)
+									
+									For j=0 To UBound(sArrayInputLocale)
+										
+										
+										bInputLocaleFound=False
+												
+										If InStr(1, sArrayInputLocale(j), "-",1) > 0 Then
+										
+											' input locale value specified as a text value (like en-us) 
+																								
+												' Get Reference Name for selected InputLocale from Locales.xml
+											    Set oXMLDoc = CreateObject("Microsoft.XMLDOM") 
+												oXMLDoc.async = False 
+												oXMLDoc.load(sLocalesXmlFile)
+												
+											    For each node in oXMLDoc.DocumentElement.childNodes
+											    	
+													sShortName= node.selectSingleNode("SName").text
+											       											    									    
+													If UCase(sShortName)=ucase(sArrayInputLocale(j)) Then
+														bInputLocaleFound=True
+													
+														strLocaleID = node.getAttribute("ID")
+														sRefeName= node.selectSingleNode("RefName").text
+												    	sKeybLayoutID = node.selectSingleNode("KeyboardID").text
+												    
+												    	While Len(strLocaleID) < 4
+															strLocaleID ="0"& strLocaleID
+														Wend
+														
+												    	While Len(sKeybLayoutID) < 8
+															sKeybLayoutID ="0"& sKeybLayoutID
+														Wend
+														
+														If Not UCase(SkipInputLocale) ="YES" Then														
+															Set objOption = Document.createElement("OPTION")
+											    			objOption.Value = UCase(strLocaleID) & ":" & UCase(sKeybLayoutID)
+															objOption.Text = sRefeName
+															ddInputLocale.Add(objOption)
+														End If
+														
+														If j= 0 Then
+															sDefaultInputLocale=UCase(strLocaleID) & ":" & UCase(sKeybLayoutID)
+														
+														End If
+														Exit For
+															
+													End If
+													    
+																									            
+											    Next
+
+												
+										ElseIf InStr(1, sArrayInputLocale(j), ":",1) > 0 Then
+										
+											' set first value as default inputlocale
+											
+												sDefaultInputLocale=sArrayInputLocale(0)
+											
+												
+											' input locale value specified as a hexadecimal value (like 0409:00000409)
+											
+											' Get Reference Name for selected InputLocale from Locales.xml
+											    Set oXMLDoc = CreateObject("Microsoft.XMLDOM") 
+												oXMLDoc.async = False 
+												oXMLDoc.load(sLocalesXmlFile)
+												
+											    For each node in oXMLDoc.DocumentElement.childNodes
+											    	
+													sRefeName=""
+													sShortName=""
+													strLocaleID=""
+													strLocaleID = node.getAttribute("ID")
+													
+													sShortName= node.selectSingleNode("SName").text
+											        sRefeName= node.selectSingleNode("RefName").text
+											    	sKeybLayoutID = node.selectSingleNode("KeyboardID").text
+											    	
+											    	While Len(strLocaleID) < 4
+														strLocaleID ="0"& strLocaleID
+													Wend
+													
+											    	While Len(sKeybLayoutID) < 8
+														sKeybLayoutID ="0"& sKeybLayoutID
+													Wend
+													
+													If UCase(strLocaleID) & ":" & UCase(sKeybLayoutID) = UCase(sArrayInputLocale(j)) Then
+														bInputLocaleFound=True
+														If Not UCase(SkipInputLocale) ="YES" Then
+															Set objOption = Document.createElement("OPTION")											    
+											    			objOption.Value = sArrayInputLocale(j)
+															objOption.Text = sRefeName
+															ddInputLocale.Add(objOption)
+														End if
+														Exit For
+													End If
+													    
+											    Next
+											    
+											    If Not bInputLocaleFound=True Then
+											    	If Not UCase(SkipInputLocale) ="YES" Then
+											    		Set objOption = Document.createElement("OPTION")
+											    		objOption.Value = sArrayInputLocale(j)
+														objOption.Text = sArrayInputLocale(j)
+											    		ddInputLocale.Add(objOption)
+											    	End if
+											    End If
+												
+											
+										End If 
+										
+									Next
+									
+								Else  'no multiInputlocale
+								
+									sInputLocale=rightline
+									
+																				
+										If InStr(1, sInputLocale, "-",1) > 0 Then
+									
+											' input locale value specified as a text value (like en-us) 
+																								
+												' Get Reference Name for selected InputLocale from Locales.xml
+											    Set oXMLDoc = CreateObject("Microsoft.XMLDOM") 
+												oXMLDoc.async = False 
+												oXMLDoc.load(sLocalesXmlFile)
+												
+											    For each node in oXMLDoc.DocumentElement.childNodes
+											    	
+													sShortName= node.selectSingleNode("SName").text
+											       											    									    
+													If UCase(sShortName)=ucase(sInputLocale) Then
+														'bInputLocaleFound=True
+													
+														strLocaleID = node.getAttribute("ID")
+														sRefeName= node.selectSingleNode("RefName").text
+												    	sKeybLayoutID = node.selectSingleNode("KeyboardID").text
+												    
+												    	While Len(strLocaleID) < 4
+															strLocaleID ="0"& strLocaleID
+														Wend
+														
+												    	While Len(sKeybLayoutID) < 8
+															sKeybLayoutID ="0"& sKeybLayoutID
+														Wend
+														
+														
+														Exit For
+															
+													End If
+													    
+																									            
+											    Next
+									
+									
+									Else
+									
+									
+									sKeybLayoutID=Right(sInputLocale,8)
+									End If
+									
+								End If
+								
+							End If
+							
+							If UCase(leftstring)=ucase("UILanguage") Then
+								sUILanguage=rightline
+							End If
+							
+							If UCase(leftstring)=ucase("Country") Then
+								sCountryID=rightline
+							End If
+							
+							If UCase(leftstring)=ucase("Computername") Then
+								sComputername=rightline
+								
+							End If
+							
+							If UCase(leftstring)=ucase("Prefix") Then
+								sPrefix=rightline
+								
+							End If
+							
+							If UCase(leftstring)=ucase("Suffix") Then
+								sSuffix=rightline
+								
+							End If
+							
+							If UCase(leftstring)=ucase("TimeZone") Then
+								sTimeZone=rightline
+							End If
+													
+							If UCase(leftstring)="DOMAIN" Then
+									
+									sDomain=rightline
+									If Len(Trim(sDomain))>0 Then sJoin="Domain"
+									If Not(SkipDomainName)="YES" Then
+										If PromptForDomain="YES" Then
+								   			document.getElementById("strPromptDomain").value=sDomain
+								 		Else
+											
+											Set objOption = Document.createElement("OPTION")
+											objOption.Text = sDomain
+											objOption.Value = sDomain
+											document.getElementById("DomainName").Add(objOption)
+										End if
+									End If
+								End If
+									
+								If Left(UCase(leftstring),2)="OU" Then
+									sDomainOU=rightline
+									If InStr(1,UCase(Trim(sDomainOU)),ucase("<%Desktop%/%Laptop%>"),1) > 0 Then
+									 	If UCase(GetType)=UCase("Desktop") Then
+									 	
+										 		If Len(Trim(sDesktopOUName)) > 0 Then
+										 			sDomainOU=ReplaceString(sDomainOU,"<%Desktop%/%Laptop%>", sDesktopOUName)
+										 		Else
+										 			sDomainOU=ReplaceString(sDomainOU,"<%Desktop%/%Laptop%>", "Desktop")	
+										 		End If
+										 		
+									 	ElseIf UCase(GetType)=UCase("Laptop") Then
+										 		If Len(Trim(sDesktopOUName)) > 0 Then
+										 			sDomainOU=ReplaceString(sDomainOU,"<%Desktop%/%Laptop%>", sLaptopOUName)
+										 		Else
+										 			sDomainOU=ReplaceString(sDomainOU,"<%Desktop%/%Laptop%>", "Laptop")
+										 		End If
+										 		
+									 	End If
+									End If
+									
+									If Len(Trim(sDomainOU))>0 Then sJoin="Domain"
+									If Not(SkipDomainOU)="YES" Then
+										If PromptForDomainOU="YES" Then
+								   			document.getElementById("strPromptDomainOU").value=sDomainOU
+								 		Else
+												
+											Set objOption = Document.createElement("OPTION")
+											objOption.Text = sDomainOU
+											objOption.Value = sDomainOU
+											document.getElementById("DomainOU").Add(objOption)
+										End if
+									End If
+								End If
+								
+								If UCase(leftstring)="DOMAINOU" Then
+									
+									sDomainOU=rightline
+									
+									If InStr(1,UCase(Trim(sDomainOU)),ucase("<%Desktop%/%Laptop%>"),1) > 0 Then
+									 	If UCase(GetType)=UCase("Desktop") Then
+									 	
+										 		If Len(Trim(sDesktopOUName)) > 0 Then
+										 			sDomainOU=ReplaceString(sDomainOU,"<%Desktop%/%Laptop%>", sDesktopOUName)
+										 		Else
+										 			sDomainOU=ReplaceString(sDomainOU,"<%Desktop%/%Laptop%>", "Desktop")	
+										 		End If
+										 		
+									 	ElseIf UCase(GetType)=UCase("Laptop") Then
+										 		If Len(Trim(sDesktopOUName)) > 0 Then
+										 			sDomainOU=ReplaceString(sDomainOU,"<%Desktop%/%Laptop%>", sLaptopOUName)
+										 		Else
+										 			sDomainOU=ReplaceString(sDomainOU,"<%Desktop%/%Laptop%>", "Laptop")
+										 		End If
+										 		
+									 	End If
+									End If
+									
+									If Len(Trim(sDomainOU))>0 Then sJoin="Domain"
+									If Not(SkipDomainOU)="YES" Then
+											If PromptForDomainOU="YES" Then
+								   				document.getElementById("strPromptDomainOU").value=sDomainOU
+								 			Else
+												Do While document.getElementById("DomainOU").length > 0
+													document.getElementById("DomainOU").remove(0)
+												Loop
+												
+												Set objOption = Document.createElement("OPTION")
+												objOption.Text = sDomainOU
+												objOption.Value = sDomainOU
+												document.getElementById("DomainOU").Add(objOption)
+											End if
+									End If
+									
+								End If
+									
+								If UCase(leftstring)=Ucase("DomainUser") Then
+									
+									sDomainUser=rightline
+									If Len(Trim(sDomainUser))>0 Then sJoin="Domain"
+									If  Len(rightline)> 0 Then
+										If Not(SkipDomainUser)="YES" Then
+											If PromptForDomainUser="YES" Then
+								   				document.getElementById("strPromptDomainUser").value=sDomainUser
+								 			Else
+											
+												document.getElementById("DomainUser").Value=sDomainUser
+											End if
+										End If
+									End If
+								End If
+								
+								If UCase(leftstring)=Ucase("DomainUserPassword")Then
+									
+									sDomainUserPassword=rightline
+									If Len(Trim(sDomainUserPassword))>0 Then sJoin="Domain"
+									If  Len(rightline)> 0 Then
+										If Not(SkipDomainUserPassword)="YES" Then
+											
+											If PromptForDomainUserPassword="YES" Then
+								   				document.getElementById("strPromptDomainUserPwd").value=sDomainUserPassword
+								   				document.getElementById("strPromptDomainUserPwd2").value=sDomainUserPassword
+								 			Else
+												document.getElementById("DomainUserPassword").Value=sDomainUserPassword
+												document.getElementById("DomainUserPassword2").Value=sDomainUserPassword
+											End if
+										End If
+									
+									End If
+								End If
+							
+						'get apps ID from selected location
+							If UCase(Left(leftstring,11)) = UCase("Application") then  
+							 	If i=0 Then
+									ReDim sArrayLocApps(i)
+								Else
+									ReDim Preserve sArrayLocApps(i)
+								End If
+								
+								If Len (rightline) > 0 Then 
+									sArrayLocApps(i)=rightline						
+									i=i+1
+								End If
+							End If 
+								
+						End If 
+				End If
+	
+				If objTextFile.AtEndOfStream Then Exit Do
+				line = objTextFile.ReadLine
+				line = Trim(line)
+			Loop
+			Exit Do
+			
+		End If
+	Loop				
+	objTextFile.Close
+	
+	If i > o Then bFoundLocApps=True
+	
+	'set User Locale
+	If Not(SkipUserLocale)="YES" Then
+		For each op in ddUserLocale.options
+			if ucase(op.value)=ucase(sUserLocale) then
+				op.selected=true
+			end if
+		Next
+	End If
+	
+	'set System Locale
+	If Not(SkipSystemLocale)="YES" Then
+		
+		For each op in ddSystemLocale.options
+			
+			if ucase(op.value)=ucase(sSystemLocale) then
+				op.selected=true
+			end if
+		Next
+	End If
+		
+	'set Keyboard Layout
+	If Not(SkipInputLocale)="YES" Then
+		If sMultiInputLocalePerLocation="YES" Then
+				
+				
+				For each op in ddInputLocale.options
+			
+					If ucase(op.value)=ucase(sDefaultInputLocale) then
+						op.selected=true
+					End if
+				Next
+				
+			Else
+				For each op in ddAvailableKeybLayouts.options
+					If ucase(op.value)=ucase(sKeybLayoutID) then
+						op.selected=true
+					End if
+				Next
+			End If
+	
+		
+	End If
+		
+	'set Country
+	If Not(SkipCountry)="YES" Then
+		For each op in ddCountry.options
+			if ucase(op.value)=ucase(sCountryID) then
+				op.selected=true
+			end if
+		Next
+	End If
+	
+	'set TimeZone
+	If Not(SkipTimeZone)="YES" Then
+		For each op in ddTimezones.options
+			if ucase(op.value)=ucase(sTimeZone) then
+				op.selected=true
+			end if
+		Next
+	End If
+		
+	'set the default UI language
+	If Not(SkipUILanguage)="YES" Then
+		PopulateDefMuiList
+		document.getElementById("DefMUI").disabled="false"
+		For each op in defMUI.options
+			if ucase(op.value)=ucase(sUILanguage) then
+				op.selected=true
+			end if
+		Next
+	End If
+	
+	'set ComputerName
+	
+		If Len(sSuffix) > 0 or Len(sPrefix)>0 Then	
+				
+				sComputername=GetComputerName
+				
+				If Not(SkipComputerName)="YES" Then
+					strHostName.value= GetComputerName
+				End If
+
+		ElseIf Len(sComputername) > 0 Then
+			
+				If InStr (1,UCase(sComputername), "SERVICE_TAG",1) > 0 Then 	
+					sComputername=Replace(UCase(sComputername),"SERVICE_TAG",sServiceTag) 
+					
+				End If
+				
+				If InStr (1,UCase(sComputername), "ASSET_TAG",1) > 0 Then		
+					sComputername=Replace(UCase(sComputername),"ASSET_TAG",sAssetTag) 
+				End If
+				
+				If Not(SkipComputerName)="YES" Then
+					strHostName.value= sComputername
+				End If
+
+		Else
+						
+			If Len(sConstruct) > 0 Then
+				sComputername=GetComputerName
+			Else
+				sComputername=""
+			End If
+			
+			If Not SkipComputerName="YES" Then
+				strHostName.value=sComputername
+			End If
+			
+		End If
+	
+End Sub
+
+Sub PopulateMultiInputLocale
+	
+			For i = 0 to MuiLanguage.length - 1
+				
+					For Each objOption in DefMUI.Options
+						 If objOption.Value = MuiLanguage(i).value Then
+							objOption.RemoveNode
+							Exit For
+						End If
+					Next
+			Next
+End Sub  
+
+Sub GetRegion
+
+	Dim i
+	Dim objTextFile
+	Dim strValue
+	Dim line
+	Dim sSeparator
+	Dim temparray
+	Dim j
+	Dim objOption
+	
+	'On Error Resume Next
+	
+	Set objFSO = CreateObject("Scripting.FileSystemObject")
+	Set objTextFile = objFSO.OpenTextFile(sSettingsIniFile, ForReading)
+			
+	do while ddRegion.length>0
+		ddRegion.remove(0)
+	Loop
+	
+	strValue =""
+    Set objOption = Document.createElement("OPTION")
+	objOption.Text = strValue
+	objOption.Value = strValue
+	ddRegion.Add(objOption)
+	
+	Do Until objTextFile.AtEndOfStream
+		line = Trim(objTextFile.Readline)
+			
+		If UCase(Trim(line))= UCase("[Region]") and (not objTextFile.AtEndOfStream) then           
+			
+			line = Trim(objTextFile.Readline)
+			
+			Do While Left( line, 1) <> "["
+			
+				If Left(line,1) =";" Or Len(Trim(line))=0 Then
+					'skip this line
+				Else	
+					
+					line=mid(line,instr(line,"=")+1)
+					sSeparator=","
+					
+					If InStr (1,line, ",",1) > 0 Then 
+						sSeparator=","
+						
+					ElseIf InStr (1,line, ";",1) > 0 Then
+						sSeparator=";"
+					End If
+					
+					temparray=Split(line,sSeparator)
+					
+					For j=0 To UBound(temparray)
+						Set objOption = Document.createElement("OPTION")
+						objOption.Text = temparray(j)
+						objOption.Value = temparray(j)
+						ddRegion.Add(objOption)
+					Next
+					
+				End If
+
+				If objTextFile.AtEndOfStream Then Exit Do
+				line = objTextFile.ReadLine
+				line = Trim(line)
+				
+			Loop
+			Exit Do
+			
+		End If
+	Loop
+			
+	objTextFile.Close
+	
+	GetDetailsFromRegion
+	
+End Sub
+
+
+Sub GetDetailsFromRegion
+	
+	Dim i
+   	Dim strValue
+   	Dim line
+   	Dim leftstring
+   	Dim rightline
+   	Dim sDefaultInputLocale
+	Dim objTextFile
+	Dim sSeparator, equalpos
+	Dim temparray, oXMLDoc, node, sRefeName, sShortName
+	Dim j
+	Dim objOption, op, sArrayInputLocale, bInputLocaleFound
+   	
+   	strValue =""
+	
+   	If Not (SkipDomainName)="YES" Then
+   		
+   		If PromptForDomain="YES" Then
+   			document.getElementById("strPromptDomain").value=""
+ 		Else
+	   		Do while document.getElementById("DomainName").length>0
+				document.getElementById("DomainName").remove(0)
+			Loop
+		End If
+		
+	End If
+	
+	If Not (SkipDomainOU)="YES" Then
+	
+		If PromptForDomainOU="YES" Then
+   			document.getElementById("strPromptDomainOU").value=""
+ 		Else
+ 		
+			do while document.getElementById("DomainOU").length>0
+				document.getElementById("DomainOU").remove(0)
+			Loop
+			
+			Set objOption = Document.createElement("OPTION")
+			objOption.Text = strValue
+			objOption.Value = strValue
+			document.getElementById("DomainOU").Add(objOption)
+		End If
+		
+	End If
+	
+	If Not (SkipDomainUser)="YES" Then
+		If PromptForDomainUser="YES" Then
+			document.getElementById("strPromptDomainUser").value=""
+		Else
+			document.getElementById("DomainUser").value=""
+		End If
+	End If
+	    
+	If Not (SkipDomainUserPassword)="YES" Then
+		If PromptForDomainUserPassword="YES" Then
+			document.getElementById("strPromptDomainUserPwd").value=""
+			document.getElementById("strPromptDomainUserPwd2").value=""
+		Else
+			document.getElementById("DomainUserPassword").value=""
+			document.getElementById("DomainUserPassword2").value=""
+		End If
+	End If
+	
+	Set objTextFile = objFSO.OpenTextFile(sSettingsIniFile, ForReading)
+	
+	Do Until objTextFile.AtEndOfStream
+		
+		line = Trim(objTextFile.Readline)
+		
+		If UCase(Trim(line))= UCase("["& document.getElementById("ddRegion").value &"]") and (not objTextFile.AtEndOfStream) then           
+			
+			sRegionName=Trim(document.getElementById("ddRegion").value)
+			
+			line = Trim(objTextFile.Readline)
+			
+			Do While Left( line, 1) <> "["
+			
+				If Left(line,1) =";" Or Len(Trim(line))=0 Then
+					'skip this line
+				Else
+					equalpos = InStr(1, line, "=", 1 )
+					
+						If equalpos > 0 Then
+						
+							leftstring = Left(line, equalpos - 1 )
+							leftstring = Trim(leftstring)
+							rightline=Trim(Mid(line, equalpos +1))
+													
+								If UCase(leftstring)="DOMAIN" Then
+									
+									sDomain=rightline
+									
+									If Not(SkipDomainName)="YES" Then
+										If PromptForDomain="YES" Then
+								   			document.getElementById("strPromptDomain").value=sDomain
+								 		Else
+											
+											Set objOption = Document.createElement("OPTION")
+											objOption.Text = sDomain
+											objOption.Value = sDomain
+											document.getElementById("DomainName").Add(objOption)
+										End if
+									End If
+								End If
+									
+								If Left(UCase(leftstring),2)="OU" Then
+									sDomainOU=rightline
+									If InStr(1,UCase(Trim(sDomainOU)),ucase("<%Desktop%/%Laptop%>"),1) > 0 Then
+									 	If UCase(GetType)=UCase("Desktop") Then
+									 	
+										 		If Len(Trim(sDesktopOUName)) > 0 Then
+										 			sDomainOU=ReplaceString(sDomainOU,"<%Desktop%/%Laptop%>", sDesktopOUName)
+										 		Else
+										 			sDomainOU=ReplaceString(sDomainOU,"<%Desktop%/%Laptop%>", "Desktop")	
+										 		End If
+										 		
+									 	ElseIf UCase(GetType)=UCase("Laptop") Then
+										 		If Len(Trim(sDesktopOUName)) > 0 Then
+										 			sDomainOU=ReplaceString(sDomainOU,"<%Desktop%/%Laptop%>", sLaptopOUName)
+										 		Else
+										 			sDomainOU=ReplaceString(sDomainOU,"<%Desktop%/%Laptop%>", "Laptop")
+										 		End If
+										 		
+									 	End If
+									End If
+									If Not(SkipDomainOU)="YES" Then
+										If PromptForDomainOU="YES" Then
+								   			document.getElementById("strPromptDomainOU").value=sDomainOU
+								 		Else
+												
+											Set objOption = Document.createElement("OPTION")
+											objOption.Text = sDomainOU
+											objOption.Value = sDomainOU
+											document.getElementById("DomainOU").Add(objOption)
+										End if
+									End If
+								End If
+								
+								If UCase(leftstring)="DOMAINOU" Then
+									
+									sDomainOU=rightline
+									If InStr(1,UCase(Trim(sDomainOU)),ucase("<%Desktop%/%Laptop%>"),1) > 0 Then
+									 	If UCase(GetType)=UCase("Desktop") Then
+									 	
+										 		If Len(Trim(sDesktopOUName)) > 0 Then
+										 			sDomainOU=ReplaceString(sDomainOU,"<%Desktop%/%Laptop%>", sDesktopOUName)
+										 		Else
+										 			sDomainOU=ReplaceString(sDomainOU,"<%Desktop%/%Laptop%>", "Desktop")	
+										 		End If
+										 		
+									 	ElseIf UCase(GetType)=UCase("Laptop") Then
+										 		If Len(Trim(sDesktopOUName)) > 0 Then
+										 			sDomainOU=ReplaceString(sDomainOU,"<%Desktop%/%Laptop%>", sLaptopOUName)
+										 		Else
+										 			sDomainOU=ReplaceString(sDomainOU,"<%Desktop%/%Laptop%>", "Laptop")
+										 		End If
+										 		
+									 	End If
+									End If
+									If Not(SkipDomainOU)="YES" Then
+											If PromptForDomainOU="YES" Then
+								   				document.getElementById("strPromptDomainOU").value=sDomainOU
+								 			Else
+												Do While document.getElementById("DomainOU").length > 0
+													document.getElementById("DomainOU").remove(0)
+												Loop
+												
+												Set objOption = Document.createElement("OPTION")
+												objOption.Text = sDomainOU
+												objOption.Value = sDomainOU
+												document.getElementById("DomainOU").Add(objOption)
+											End if
+									End If
+									
+								End If
+									
+								If UCase(leftstring)=Ucase("DomainUser") Then
+									
+									sDomainUser=rightline
+									
+									If  Len(rightline)> 0 Then
+										If Not(SkipDomainUser)="YES" Then
+											If PromptForDomainUser="YES" Then
+								   				document.getElementById("strPromptDomainUser").value=sDomainUser
+								 			Else
+											
+												document.getElementById("DomainUser").Value=sDomainUser
+											End if
+										End If
+									End If
+								End If
+								
+								If UCase(leftstring)=Ucase("DomainUserPassword")Then
+									
+									sDomainUserPassword=rightline
+									If  Len(rightline)> 0 Then
+										If Not(SkipDomainUserPassword)="YES" Then
+											
+											If PromptForDomainUserPassword="YES" Then
+								   				document.getElementById("strPromptDomainUserPwd").value=sDomainUserPassword
+								   				document.getElementById("strPromptDomainUserPwd2").value=sDomainUserPassword
+								 			Else
+												document.getElementById("DomainUserPassword").Value=sDomainUserPassword
+												document.getElementById("DomainUserPassword2").Value=sDomainUserPassword
+											End if
+										End If
+									
+									End If
+								End If
+								
+						End If 
+				End If
+	
+				If objTextFile.AtEndOfStream Then Exit Do
+				line = objTextFile.ReadLine
+				line = Trim(line)
+			Loop
+			Exit Do
+			
+		End If
+	Loop				
+	objTextFile.Close
+	
+	
+End Sub
+
+Sub GetDomain
+
+	If Not (SkipDomainName)="YES" Then
+		Dim i
+		Dim sSeparator
+		
+		On Error Resume Next
+		
+		Set objFSO = CreateObject("Scripting.FileSystemObject")
+		Set objTextFile = objFSO.OpenTextFile(sSettingsIniFile, ForReading)
+			
+			do while document.getElementById("DomainName").length>0
+				document.getElementById("DomainName").remove(0)
+			Loop
+		
+			strValue =""
+'		    Set objOption = Document.createElement("OPTION")
+'			objOption.Text = strValue
+'			objOption.Value = strValue
+'			document.getElementById("DomainName").Add(objOption)
+		
+			Do Until objTextFile.AtEndOfStream
+				line = Trim(objTextFile.Readline)
+					
+				If UCase(Trim(line))= UCase("[Domain]") and (not objTextFile.AtEndOfStream) then           
+					line = Trim(objTextFile.Readline)
+					
+					Do While Left( line, 1) <> "["
+					
+						If Left(line,1) =";" Or Len(Trim(line))=0 Then
+							'skip this line
+						Else	
+							equalpos = InStr(1, line, "=", 1 )
+							If equalpos > 0 Then
+								leftstring = Left(line, equalpos - 1 )
+								leftstring = Trim(leftstring)
+							
+								If UCase(leftstring)="LIST" Then
+									
+									rightline=mid(line, equalpos +1)
+									
+									sSeparator=","
+									If InStr (1,rightline, ",",1) > 0 Then 
+										sSeparator=","
+									ElseIf InStr (1,rightline, ";",1) > 0 Then
+										sSeparator=";"
+									End If
+									
+									temparray=Split(rightline,sSeparator)
+									
+									For j=0 To UBound(temparray)
+										Set objOption = Document.createElement("OPTION")
+										objOption.Text = temparray(j)
+										objOption.Value = temparray(j)
+										document.getElementById("DomainName").Add(objOption)
+										
+									Next
+									
+								ElseIf UCase(leftstring)=Trim(UCase(ddLocationName.value)) Then
+									rightline=mid(line, equalpos +1)
+									sSeparator=","
+									If InStr (1,rightline, ",",1) > 0 Then 
+										sSeparator=","
+									ElseIf InStr (1,rightline, ";",1) > 0 Then
+										sSeparator=";"
+									End If
+									
+									temparray=Split(rightline,sSeparator)
+									
+									For j=0 To UBound(temparray)
+										Set objOption = Document.createElement("OPTION")
+										objOption.Text = temparray(j)
+										objOption.Value = temparray(j)
+										document.getElementById("DomainName").Add(objOption)
+									Next
+								End If
+								
+							End If
+					
+						End If
+		
+						If objTextFile.AtEndOfStream Then Exit Do
+						line = objTextFile.ReadLine
+						line = Trim(line)
+						
+					Loop
+					Exit Do
+					
+				End If
+			Loop				
+			objTextFile.Close
+			sJoin="Domain"
+			GetDetailsFromDomain
+		
+	End If
+		
+End Sub
+
+
+Sub GetDetailsFromDomain
+
+	Dim i
+
+	On Error Resume Next
+	
+	Set objTextFile = objFSO.OpenTextFile(sSettingsIniFile, ForReading)
+	
+	If Not (SkipDomainOU)="YES" Then
+	
+		do while document.getElementById("DomainOU").length>0
+			document.getElementById("DomainOU").remove(0)
+		Loop
+	
+		strValue =""
+	    Set objOption = Document.createElement("OPTION")
+		objOption.Text = strValue
+		objOption.Value = strValue
+		document.getElementById("DomainOU").Add(objOption)
+		
+	End If
+	
+	If Not (SkipDomainUser)="YES" Then
+		document.getElementById("DomainUser").value=""
+	End If
+	
+	If Not (SkipDomainUserPassword)="YES" Then
+		document.getElementById("DomainUserPassword").value=""
+		document.getElementById("DomainUserPassword2").value=""
+	End If
+	
+	Do Until objTextFile.AtEndOfStream
+		line = Trim(objTextFile.Readline)
+		If UCase(Trim(line))= UCase("["& document.getElementById("DomainName").value &"]") and (not objTextFile.AtEndOfStream) then           
+			line = Trim(objTextFile.Readline)
+			
+			Do While Left( line, 1) <> "["
+			
+				If Left(line,1) =";" Or Len(Trim(line))=0 Then
+					'skip this line
+				Else
+					
+					equalpos = InStr(1, line, "=", 1 )
+					
+					If equalpos > 0 Then
+							leftstring = Left(line, equalpos - 1 )
+							leftstring = Trim(leftstring)
+							rightline=mid(line, equalpos +1)
+							
+							If Left(UCase(leftstring),2)="OU" Then
+								sDomainOU=rightline
+								If InStr(1,UCase(Trim(sDomainOU)),ucase("<%Desktop%/%Laptop%>"),1) > 0 Then
+								 	If UCase(GetType)=UCase("Desktop") Then
+								 	
+									 		If Len(Trim(sDesktopOUName)) > 0 Then
+									 			sDomainOU=ReplaceString(sDomainOU,"<%Desktop%/%Laptop%>", sDesktopOUName)
+									 		Else
+									 			sDomainOU=ReplaceString(sDomainOU,"<%Desktop%/%Laptop%>", "Desktop")	
+									 		End If
+									 		
+								 	ElseIf UCase(GetType)=UCase("Laptop") Then
+									 		If Len(Trim(sDesktopOUName)) > 0 Then
+									 			sDomainOU=ReplaceString(sDomainOU,"<%Desktop%/%Laptop%>", sLaptopOUName)
+									 		Else
+									 			sDomainOU=ReplaceString(sDomainOU,"<%Desktop%/%Laptop%>", "Laptop")
+									 		End If
+									 		
+								 	End If
+								End If
+								If Not(SkipDomainOU)="YES" Then
+									Set objOption = Document.createElement("OPTION")
+									objOption.Text = sDomainOU
+									objOption.Value = sDomainOU
+									document.getElementById("DomainOU").Add(objOption)
+								End If
+							End If
+							
+							If UCase(leftstring)="DOMAINOU" Then
+								
+								sDomainOU=rightline
+								If InStr(1,UCase(Trim(sDomainOU)),ucase("<%Desktop%/%Laptop%>"),1) > 0 Then
+								 	If UCase(GetType)=UCase("Desktop") Then
+								 	
+									 		If Len(Trim(sDesktopOUName)) > 0 Then
+									 			sDomainOU=ReplaceString(sDomainOU,"<%Desktop%/%Laptop%>", sDesktopOUName)
+									 		Else
+									 			sDomainOU=ReplaceString(sDomainOU,"<%Desktop%/%Laptop%>", "Desktop")	
+									 		End If
+									 		
+								 	ElseIf UCase(GetType)=UCase("Laptop") Then
+									 		If Len(Trim(sDesktopOUName)) > 0 Then
+									 			sDomainOU=ReplaceString(sDomainOU,"<%Desktop%/%Laptop%>", sLaptopOUName)
+									 		Else
+									 			sDomainOU=ReplaceString(sDomainOU,"<%Desktop%/%Laptop%>", "Laptop")
+									 		End If
+									 		
+								 	End If
+								End If
+								
+								If Not(SkipDomainOU)="YES" Then
+									Do While document.getElementById("DomainOU").length > 0
+										document.getElementById("DomainOU").remove(0)
+									Loop
+									
+									Set objOption = Document.createElement("OPTION")
+									objOption.Text = sDomainOU
+									objOption.Value = sDomainOU
+									document.getElementById("DomainOU").Add(objOption)
+								End If
+								
+							End If
+								
+							If UCase(leftstring)=Ucase("DomainUser") Then
+								
+								sDomainUser=rightline
+								
+								If  Len(rightline)> 0 Then
+									If Not(SkipDomainUser)="YES" Then
+										document.getElementById("DomainUser").Value=sDomainUser
+									End If
+								End If
+							End If
+							
+							If UCase(leftstring)=Ucase("DomainUserPassword")Then
+								
+								sDomainUserPassword=rightline
+								If  Len(rightline)> 0 Then
+									If Not(SkipDomainUserPassword)="YES" Then
+										document.getElementById("DomainUserPassword").Value=sDomainUserPassword
+										document.getElementById("DomainUserPassword2").Value=sDomainUserPassword
+									End If
+								
+								End If
+							End If		
+						
+					End If 
+					
+				End If
+
+				If objTextFile.AtEndOfStream Then Exit Do
+				line = objTextFile.ReadLine
+				line = Trim(line)
+				
+			Loop
+			Exit Do
+			
+		End If
+	Loop				
+	objTextFile.Close
+
+End Sub
+
+
+Sub GetDefaultDomain
+
+	If Len(sDefaultDomain) > 0 Then
+
+		document.getElementById("strPromptDomain").value=sDefaultDomain
+		GetDetailsFromDefaultDomain
+	ElseIf Len(sDefaultDomainReadonly) > o Then 
+		document.getElementById("strPromptDomain").value=sDefaultDomainReadOnly
+		GetDetailsFromDefaultDomain		
+	End If
+		
+End Sub
+
+
+Sub GetDetailsFromDefaultDomain
+	If PromptForDomainOU="YES" Then
+		If Len(sDefaultDomainOU) > 0 Then
+	   		document.getElementById("strPromptDomainOU").value=sDefaultDomainOU
+		ElseIf Len (sDefaultDomainOUReadonly) > 0 Then
+	   		document.getElementById("strPromptDomainOU").value=sDefaultDomainOUReadonly
+			
+		End If
+		
+	End If
+	
+End Sub
+
+
+
+Sub SetUserLocaleToUILanguage
+	
+	If UCase(Trim(ReadIni(sSettingsIniFile, "General", "UserLocale")))=ucase("%UILanguage%") Then
+		sUserLocale=document.getElementById("DefMUI").value
+		'set User Locale
+		If Not(SkipUserLocale)="YES" Then
+			For each op in ddUserLocale.options
+				if ucase(op.value)=ucase(sUserLocale) then
+					op.selected=true
+				end if
+			Next
+			
+			GetDefaultKeyb_Country
+		End If
+	End If
+	
+	If UCase(Trim(ReadIni(sSettingsIniFile, "General", "SystemLocale")))= ucase("%UILanguage%") Then
+		sSystemLocale=document.getElementById("DefMUI").value
+	
+		'set System Locale
+		If Not(SkipSystemLocale)="YES" Then
+			
+			For each op in ddSystemLocale.options
+				
+				if ucase(op.value)=ucase(sSystemLocale) then
+					op.selected=true
+				end if
+			Next
+		End If
+	End If
+	
+	
+End Sub
+
+Sub GetOU
+
+	If Not (SkipDomainOU)="YES" Then
+		Dim i
+	
+		On Error Resume Next
+		
+		Set objFSO = CreateObject("Scripting.FileSystemObject")
+		Set objTextFile = objFSO.OpenTextFile(sSettingsIniFile, ForReading)
+			
+			do while document.getElementById("DomainOU").length>0
+				document.getElementById("DomainOU").remove(0)
+			Loop
+		
+			strValue =""
+		    Set objOption = Document.createElement("OPTION")
+			objOption.Text = strValue
+			objOption.Value = strValue
+			document.getElementById("DomainOU").Add(objOption)
+		
+			Do Until objTextFile.AtEndOfStream
+				line = Trim(objTextFile.Readline)
+					
+				If UCase(Trim(line))= UCase("[OU]") and (not objTextFile.AtEndOfStream) then           
+					line = Trim(objTextFile.Readline)
+					
+					Do While Left( line, 1) <> "["
+					
+						If Left(line,1) =";" Or Len(Trim(line))=0 Then
+							'skip this line
+						Else	
+							equalpos = InStr(1, line, "=", 1 )
+							If equalpos > 0 Then
+								leftstring = Left(line, equalpos - 1 )
+								leftstring = Trim(leftstring)
+							
+								If UCase(leftstring)="LIST" Then
+									rightline=mid(line, equalpos +1)
+									sSeparator=","
+									If InStr (1,rightline, ",",1) > 0 Then 
+										sSeparator=","
+									ElseIf InStr (1,rightline, ";",1) > 0 Then
+										sSeparator=";"
+									End If
+									
+									temparray=Split(rightline,sSeparator)
+									
+									
+														
+									For j=0 To UBound(temparray)
+									
+										If InStr(1,UCase(Trim(temparray(j))),ucase("<%Desktop%/%Laptop%>"),1) > 0 Then
+										 	If UCase(GetType)=UCase("Desktop") Then
+										 	
+											 		If Len(Trim(sDesktopOUName)) > 0 Then
+											 			temparray(j)=ReplaceString(temparray(j),"<%Desktop%/%Laptop%>", sDesktopOUName)
+											 		Else
+											 			temparray(j)=ReplaceString(temparray(j),"<%Desktop%/%Laptop%>", "Desktop")	
+											 		End If
+											 		
+										 	ElseIf UCase(GetType)=UCase("Laptop") Then
+											 		If Len(Trim(sDesktopOUName)) > 0 Then
+											 			temparray(j)=ReplaceString(temparray(j),"<%Desktop%/%Laptop%>", sLaptopOUName)
+											 		Else
+											 			temparray(j)=ReplaceString(temparray(j),"<%Desktop%/%Laptop%>", "Laptop")
+											 		End If
+											 		
+										 	End If
+										End If
+									
+										Set objOption = Document.createElement("OPTION")
+										objOption.Text = temparray(j)
+										objOption.Value = temparray(j)
+										document.getElementById("DomainOU").Add(objOption)
+									Next
+									
+								ElseIf UCase(leftstring)=Trim(UCase(ddLocationName.value)) Then
+									rightline=mid(line, equalpos +1)
+									sSeparator=","
+									If InStr (1,rightline, ",",1) > 0 Then 
+										sSeparator=","
+									ElseIf InStr (1,rightline, ";",1) > 0 Then
+										sSeparator=";"
+									End If
+									
+									temparray=Split(rightline,sSeparator)
+									
+									For j=0 To UBound(temparray)
+									
+										If InStr(1,UCase(Trim(temparray(j))),ucase("<%Desktop%/%Laptop%>"),1) > 0 Then
+										 	If UCase(GetType)=UCase("Desktop") Then
+										 	
+											 		If Len(Trim(sDesktopOUName)) > 0 Then
+											 			temparray(j)=ReplaceString(temparray(j),"<%Desktop%/%Laptop%>", sDesktopOUName)
+											 		Else
+											 			temparray(j)=ReplaceString(temparray(j),"<%Desktop%/%Laptop%>", "Desktop")	
+											 		End If
+											 		
+										 	ElseIf UCase(GetType)=UCase("Laptop") Then
+											 		If Len(Trim(sDesktopOUName)) > 0 Then
+											 			temparray(j)=ReplaceString(temparray(j),"<%Desktop%/%Laptop%>", sLaptopOUName)
+											 		Else
+											 			temparray(j)=ReplaceString(temparray(j),"<%Desktop%/%Laptop%>", "Laptop")
+											 		End If
+											 		
+										 	End If
+										End If
+									
+										Set objOption = Document.createElement("OPTION")
+										objOption.Text = temparray(j)
+										objOption.Value = temparray(j)
+										document.getElementById("DomainOU").Add(objOption)
+									Next
+								End If
+								
+							End If
+					
+						End If
+		
+						If objTextFile.AtEndOfStream Then Exit Do
+						line = objTextFile.ReadLine
+						line = Trim(line)
+						
+					Loop
+					Exit Do
+					
+				End If
+			Loop				
+			objTextFile.Close
+		
+	End If
+		
+End Sub
+
+Sub GetAllLocales
+	
+	Dim strValue
+	Dim objOption1
+	Dim objOption2
+	Dim oXMLDoc, node
+	Dim strLocaleID, sLocaleName, strSName, sIsSysLocale
+	
+	If Not (SkipUserLocale)="YES" Then
+	 
+		
+		On Error Resume Next
+		
+		do while ddUserLocale.length>0
+			ddUserLocale.remove(0)
+		Loop
+		
+		strValue =""
+	    Set objOption1 = Document.createElement("OPTION")
+		objOption1.Text = strValue
+		objOption1.Value = strValue
+		ddUserLocale.Add(objOption1)
+		
+
+		' Load the XML File
+		Set oXMLDoc = CreateObject("Microsoft.XMLDOM") 
+		oXMLDoc.async = False 
+		oXMLDoc.load(sLocalesXmlFile)
+			
+		' Get needed variables to set information from Locales.xml
+	    For each node in oXMLDoc.DocumentElement.childNodes
+	    	strLocaleID=""
+			strSName=""
+			sLocaleName=""
+			
+	    	strLocaleID = node.getAttribute("ID")
+	    	strSName = node.selectSingleNode("SName").text
+	        sLocaleName= node.selectSingleNode("RefName").text
+	   
+		    while len(strLocaleID)<4
+				strLocaleID ="0"& strLocaleID
+			Wend
+		    
+		    Set objOption1 = Document.createElement("OPTION")    
+			objOption1.Text = sLocaleName
+			objOption1.Value = strSName
+			ddUserLocale.Add(objOption1)
+			                
+	    Next
+	End If
+	
+	If Not (SkipSystemLocale)="YES" Then
+	
+		do while ddSystemLocale.length>0
+			ddSystemLocale.remove(0)
+		Loop
+		
+		strValue =""
+	    
+		Set objOption2 = Document.createElement("OPTION")
+		objOption2.Text = strValue
+		objOption2.Value = strValue
+		ddSystemLocale.Add(objOption2)
+		
+		' Load the XML File
+		Set oXMLDoc = CreateObject("Microsoft.XMLDOM") 
+		oXMLDoc.async = False 
+		oXMLDoc.load(sLocalesXmlFile)
+			
+		' Get needed variables to set information from Locales.xml
+	    For each node in oXMLDoc.DocumentElement.childNodes
+	    	strLocaleID=""
+			strSName=""
+			sLocaleName=""
+			sIsSysLocale=""
+			
+	    	strLocaleID = node.getAttribute("ID")
+	    	strSName = node.selectSingleNode("SName").text
+	        sLocaleName= node.selectSingleNode("RefName").text
+	    	sIsSysLocale= node.selectSingleNode("IsSysLocale").text
+	    	
+		    while len(strLocaleID)<4
+				strLocaleID ="0"& strLocaleID
+			Wend
+		    
+			If Left(UCase(sIsSysLocale),1)="Y" Then
+				Set objOption2 = Document.createElement("OPTION")
+				objOption2.Text = sLocaleName
+				objOption2.Value = strSName
+				ddSystemLocale.Add(objOption2)
+			
+			End If
+			                
+	    Next
+	
+	End If
+	
+End Sub
+
+Function GetDefaultKeyb_Country()
+Dim oXMLDoc
+Dim sDefaultCountryID, strID, sSelectedLocale, sName, sRefName, sDefaultKeybName, sDefaultKeybID, sIsSysLocale
+
+On Error Resume Next
+For Each objOption in ddUserLocale.Options
+	
+    If objOption.Value = ddUserLocale.value Then
+    	
+       	sSelectedLocale=objOption.Value
+       	
+    	' Load the XML File
+		Set oXMLDoc = CreateObject("Microsoft.XMLDOM") 
+		oXMLDoc.async = False 
+		oXMLDoc.load(sLocalesXmlFile)
+		
+		'Get needed variables to set information from Locales.xml
+	    For each node in oXMLDoc.DocumentElement.childNodes
+	    		
+				sName= node.selectSingleNode("SName").text
+		        If UCase(sName)=UCase(sSelectedLocale) then 
+		        
+		        	strID = node.getAttribute("ID")
+			    	While len(strID) < 4
+						strID ="0"& strID
+					Wend
+					
+					sRefName= node.selectSingleNode("RefName").text
+			        
+			        sDefaultKeybID=node.selectSingleNode("KeyboardID").text
+			        sDefaultCountryID=node.selectSingleNode("CountryID").text
+			        sIsSysLocale=node.selectSingleNode("IsSysLocale").text
+		        	Exit for
+	        	End If	        
+	    Next	
+		
+		If Len(Trim(sDefaultKeybID))> 0 Then
+		
+	    	While len(sDefaultKeybID) < 8
+			 	sDefaultKeybID ="0"& sDefaultKeybID
+			Wend
+		End If
+		
+		'select the default system Locale
+        If Not (SkipSystemLocale)="YES" Then
+	        If Left(UCase(sIsSysLocale),1)="Y" Then
+	        	sDefaultSystemLocale=sRefName
+		        for j = 0 to ddSystemLocale.options.length - 1		
+		            if UCase(ddSystemLocale.options(j).value) =  UCase(sName) Then 
+		                ddSystemLocale.options(j).Selected = sDefaultSystemLocale
+		                exit for
+		            end if        
+		        Next
+	        Else
+	        	sDefaultSystemLocale="English (United States)"
+	        	ddSystemLocale.value="en-US"
+	        	ddCountry.options(0).Selected =sDefaultSystemLocale
+	        End If
+        End If
+		
+		'select the default keyboard
+		If Not (SkipInputLocale)="YES" Then
+			If sMultiInputLocalePerLocation="YES" Then
+			 'nothing
+			Else
+			
+					for j = 0 to ddAvailableKeybLayouts.options.length - 1
+					
+			        	If Trim(sDefaultKeybID)="N/A" Or Len(Trim(sDefaultKeybID))=0 Then
+			        		sDefaultKeybID=" "
+			        		ddAvailableKeybLayouts.options(0).Selected =sDefaultKeybID	        	
+			        	Else
+				        	While len(ddAvailableKeybLayouts.Options(j).Value) < 8
+								ddAvailableKeybLayouts.Options(j).Value ="0"& ddAvailableKeybLayouts.Options(j).Value
+							Wend
+						End If
+						
+			            if UCase(ddAvailableKeybLayouts.options(j).value) = UCase(sDefaultKeybID) then            
+			                ddAvailableKeybLayouts.options(j).Selected = sDefaultKeybID
+			                bKeyb=True
+			                exit For
+			             
+			            end if      
+			                  
+			        Next
+			        
+			        If bKeyb=False Then
+			        	sDefaultKeybID=" "
+			        	ddAvailableKeybLayouts.options(0).Selected =sDefaultKeybID
+			        End If
+			  
+			  End If
+			  
+		End If
+		
+		'select the default country
+		If Not (SkipCountry)="YES" Then      
+	        If Trim(sDefaultCountryID)="N/A" Or Trim(sDefaultCountryID)="" Then
+	        	sDefaultCountryID=" "
+	        	
+	        End If
+	        
+	        for j = 0 to ddCountry.options.length - 1		
+	            if ddCountry.options(j).value = sDefaultCountryID then            
+	                ddCountry.options(j).Selected = sDefaultCountryID
+	                exit for
+	            end if        
+	        Next
+		End If
+		
+		Exit For
+    
+    End If
+    
+ Next 
+   
+End Function
+
+
+Sub GetDefaultMUI
+Dim i, strValue, objOption
+Dim objTextFile,line
+
+
+On Error Resume Next
+	
+	Set objFSO = CreateObject("Scripting.FileSystemObject")
+
+	If objFSO.FileExists (sSettingsIniFile) Then
+
+		Set objTextFile = objFSO.OpenTextFile(sSettingsIniFile, ForReading)
+		do while document.getElementById("DefMUI").length>0
+			document.getElementById("DefMUI").remove(0)
+		Loop
+	
+		strValue =""
+	    Set objOption = Document.createElement("OPTION")
+		objOption.Text = strValue
+		objOption.Value = strValue
+		document.getElementById("DefMUI").Add(objOption)
+	
+		Do Until objTextFile.AtEndOfStream
+			line = Trim(objTextFile.Readline)
+				
+			If UCase(Trim(line))= UCase("[MUIList]") and (not objTextFile.AtEndOfStream) then           
+				line = Trim(objTextFile.Readline)
+				
+				Do While Left( line, 1) <> "["
+				
+					If Left(line,1) =";" Or Len(Trim(line))=0 Then
+						'skip this line
+					Else	
+						Set objOption = Document.createElement("OPTION")
+						objOption.Text = mid(line,1,instr(line,"=")-1)
+						objOption.Value = mid(line,instr(line,"=")+1)
+						document.getElementById("DefMUI").Add(objOption)
+	
+					End If
+	
+					If objTextFile.AtEndOfStream Then Exit Do
+					line = objTextFile.ReadLine
+					line = Trim(line)
+					
+				Loop
+				Exit Do
+				
+			End If
+		Loop				
+		objTextFile.Close
+		
+	Else
+		'Set the MUI language field to English default
+				    
+    	Set objOption = Document.createElement("OPTION")
+		objOption.Text = "English"
+		objOption.Value = "en-US"
+		document.getElementById("DefMUI").Add(objOption)
+	End If
+	
+End Sub
+
+
+Sub PopulateDefMuiList
+	
+	If Not(SkipUILanguage)="YES" Then
+	
+		GetDefaultMUI
+		sSelectedLang=""
+		
+		document.getElementById("DefMUI").disabled="false"
+		'document.getElementById("DefMUI").focus
+		
+		If Left(UCase(bMUI),1)="Y" Then
+			
+				sSelectedLang =DefMUI.value
+				
+		End If
+			
+		If Not Len(Trim(sSelectedLang))=0 Then
+	  			sSelectedLang = RTrim(sSelectedLang)
+	  	End If
+	  	
+	End If
+ 	
+End Sub  
+
+
+Function GetComputerName
+
+	Dim  sDeskLap, strComputer, i, temparray, sHostname
+	Dim colSMBIOS, objSMBIOS
+	
+		strComputer = "."
+		Set objWMIService = GetObject("winmgmts:" _
+	    		& "{impersonationLevel=impersonate}!\\" & strComputer & "\root\cimv2")
+		
+		'get the Service tag and Asset Tag from BIOS
+		
+		Set colSMBIOS = objWMIService.ExecQuery("Select * from Win32_SystemEnclosure",,48)
+		For Each objSMBIOS in colSMBIOS
+	    	sServiceTag=objSMBIOS.SerialNumber
+	    	sAssetTag=objSMBIOS.SMBIOSAssetTag
+		Next	
+		
+		Select Case UCase(GetType)
+			
+			 Case ucase("Desktop")
+				 sDeskLap=sDesktop
+				 
+			 Case ucase("Laptop")
+			 	 sDeskLap=sLaptop
+			 	 
+			 Case Else
+			 	 sDeskLap=""
+		End Select
+		
+		' Construct Computername like <Prefix><Desktop_Laptop_Server><Service_Tag> or <Prefix><Desktop_Laptop_Server><Asset_Tag>
+		sHostname=""
+		temparray=Split(sConstruct,"+")
+	
+		For i=0 To UBound(temparray)
+	
+			If UCase(temparray(i)) = UCase("<Prefix>") Then
+				sHostname=sHostname & sPrefix
+			End If
+			
+			If UCase(temparray(i)) = UCase("<Desktop_Laptop_Server>") Then
+				sHostname= sHostname + sDeskLap
+			End If
+			
+			If UCase(temparray(i)) = UCase("<Service_Tag>") Then
+				If Len(Trim(sServiceTag))= 0 Then
+					sServiceTag="<ServiceTag is blank>"
+				End If
+				
+				sHostname=sHostname + UCase(sServiceTag)
+			End If
+			
+			If UCase(temparray(i)) = UCase("<Asset_Tag>") Then
+				
+				If Len(Trim(sAssetTag))= 0 Then
+					sAssetTag="<Asset Tag is blank>"
+				End If
+				
+				sHostname=sHostname + UCase(sAssetTag)
+			End If
+			
+			If UCase(temparray(i)) = UCase("<Suffix>") Then
+				sHostname=sHostname & sSuffix
+			End If
+			
+		Next
+		
+		If Not(SkipComputerName)="YES" Then
+		
+			'If document.readyState = "Complete" Then
+				strHostName.value=sHostname
+				
+			'End If
+				
+		End If
+		
+		GetComputerName=sHostname
+		
+End Function
+
+
+Sub ButtonContinueClick
+	Dim myVar, strMsg
+
+	'check Location Name
+	If Not SkipLocationName="YES" Then    
+			If Len(Trim(ddLocationName.value)) =0 Then
+		    	MsgBox "Please Select Location ...",,"Field Control"
+		    	document.getElementById("ddLocationName").focus
+		    	Exit Sub
+		    Else
+		    	sLocationName=ddLocationName.value
+		    End If
+	End If
+	
+	'check regional settings
+	
+	If Not SkipRegionalSettings="YES" Then
+		If Not SkipUILanguage="YES" Then    	
+		    If Len(Trim(DefMUI.value)) =0 Then
+		    	MsgBox "Please Select UI Language ...",,"Field Control"
+		    	document.getElementById("DefMUI").focus
+		    	Exit Sub
+		    Else
+		      	sUILanguage=DefMUI.value
+		    End If
+		End If
+		
+		If Not SkipUserLocale="YES" Then    
+			If Len(Trim(ddUserLocale.value)) =0 Then
+		    	MsgBox "Please Select Language or User Locale ...",,"Field Control"
+		    	document.getElementById("ddUserLocale").focus
+		    	Exit Sub
+		    Else
+		    	sUserLocale=ddUserLocale.value
+		    End If
+		End If
+		
+		If Not SkipSystemLocale="YES" Then    	
+			If Len(Trim(ddSystemLocale.value)) =0 Then
+		    	MsgBox "Please Select System Locale ...",,"Field Control"
+		    	document.getElementById("ddSystemLocale").focus
+		    	Exit Sub
+		    Else
+		      	sSystemLocale=ddSystemLocale.value
+		    End If
+		End If
+		
+		If Not SkipInputLocale="YES" Then    	
+			If sMultiInputLocalePerLocation="YES" Then
+				If Len(Trim(ddInputLocale.value)) =0 Then
+			    	MsgBox "Please Select a default Input Locale ...",,"Field Control"
+			    	document.getElementById("ddInputLocale").focus
+			    	Exit Sub
+			    End If
+			Else
+			
+			   	If Len(Trim(ddAvailableKeybLayouts.value)) =0 Then
+			    	MsgBox "Please Select Keyboard ...",,"Field Control"
+			    	document.getElementById("ddAvailableKeybLayouts").focus
+			    	Exit Sub
+			    Else
+			      	sKeybLayoutID=ddAvailableKeybLayouts.value
+			    End If
+			 End If
+			 
+		End If
+		
+		If Not SkipCountry="YES" Then    
+		    If Len(Trim(ddCountry.value)) =0 Then
+		    	MsgBox "Please Select Country ...",,"Field Control"
+		    	document.getElementById("ddCountry").focus
+		    	Exit Sub
+		     Else
+		      	sCountryID=ddCountry.value
+		    End If
+		End If
+		
+		If Not SkipTimezone="YES" Then    	
+		
+		    If Len(Trim(ddTimezones.value)) = 0 Or (UCase(ddTimezones.value)=UCase("Selected=")) Then
+		    	MsgBox "Please Select Time Zone ...",,"Field Control"
+		    	document.getElementById("ddTimezones").focus
+		    	Exit Sub
+		    Else
+		      	sTimeZone=ddTimezones.value
+		    End If
+		End If
+		
+	End If
+
+    'check computer name
+    
+    If Not SkipComputerName="YES" Then     
+    
+	    If Len(Trim(strHostName.value)) =0 Then
+	    	MsgBox "Computer Name missing or wrong...",,"Field Control"
+	    	document.getElementById("strHostName").focus
+	    	Exit Sub
+	    Else
+	    	sComputername =strHostName.value
+	    End If
+	    
+	    If Not ValidateComputerName Then
+	    	If Len(document.getElementById("strHostName").value)> 15 Then
+	    		MsgBox "Computer Name wrong: cannot have more than 15 characters...",,"Field Control"
+	    	Else
+	    		MsgBox "Computer Name missing or wrong...",,"Field Control"
+	    	End If
+	    	document.getElementById("strHostName").focus
+	    	Exit Sub
+	    Else
+	    	sComputername =strHostName.value
+	    End If
+	    
+	End If
+    
+' Static IP address
+	If PromptForIPAddress="YES" Then
+		If Len(document.getElementById("strIPAddress").value)=0 Then
+			MsgBox "IP Address missing or wrong...",,"Field Control"
+			document.getElementById("strIPAddress").focus
+			Exit Sub
+		Else
+			sIPAddress =Trim(strIPAddress.value)
+			If CheckIP(sIPAddress, strPattern)= "Fail" Then
+				MsgBox "IP Address missing or wrong...",,"Field Control"
+				document.getElementById("strIPAddress").focus
+				Exit Sub
+			End If
+			
+			If Trim(strNetMask.value) > 0 And Trim(strNetMask.value) < 33 Then
+				sIPAddress =sIPAddress & "/" & Trim(strNetMask.value)
+			Else
+				MsgBox "NetMask missing or wrong...",,"Field Control"
+				document.getElementById("strNetMask").focus
+				Exit Sub
+			End If
+			
+			If CheckIP(sIPAddress, strPattern)= "Fail" Then
+				MsgBox "NetMask missing or wrong...",,"Field Control"
+				document.getElementById("strNetMask").focus
+				Exit Sub
+			End If
+			
+			
+		End If
+	End If
+	
+
+	If PromptForGatewayAddress="YES" Then
+		If Len(document.getElementById("strGatewayAddress").value)=0 Then
+			MsgBox "Gateway Address missing or wrong...",,"Field Control"
+			document.getElementById("strGatewayAddress").focus
+			Exit Sub
+		Else
+			sGatewayAddress =Trim(strGatewayAddress.value)
+			
+			If CheckIP(sGatewayAddress, strPattern)= "Fail" Then
+				MsgBox "Gateway Address missing or wrong...",,"Field Control"
+				document.getElementById("strGatewayAddress").focus
+				Exit Sub
+			End If
+		End If
+	End If
+	
+	If PromptForDNS="YES" Then
+	
+		If Len(document.getElementById("strPrimDNSAddress").value)=0 Then
+			MsgBox "Primary DNS IP address missing or wrong...",,"Field Control"
+			document.getElementById("strPrimDNSAddress").focus
+			Exit Sub
+		Else
+		
+			sPrimDNSAddress =Trim(strPrimDNSAddress.value)
+			If CheckIP(sPrimDNSAddress, strPattern)= "Fail" Then
+				MsgBox "Primary DNS IP address missing or wrong...",,"Field Control"
+				document.getElementById("strPrimDNSAddress").focus
+				Exit Sub
+			End If
+			
+			If Len(Trim(strSecDNSAddress.value)) > 0 Then
+				sSecDNSAddress =Trim(strSecDNSAddress.value)
+				If CheckIP(sSecDNSAddress, strPattern)= "Fail" Then
+					MsgBox "Secondary DNS IP address missing or wrong...",,"Field Control"
+					document.getElementById("strSecDNSAddress").focus
+					Exit Sub
+				End If
+			End If
+		End If
+	End If
+	
+    'Check Domain Join
+    If sJoin="Domain" Then
+		   	If Not SkipDomainJoin="YES" Then
+		   	
+		       	'check DomainName
+					If PromptForDomain="YES" Then
+		    			
+			    			If Len(Trim(document.getElementById("strPromptDomain").Value)) =0 Then
+				    			MsgBox "Please enter a Domain name...",,"Field Control"
+				    			document.getElementById("strPromptDomain").focus
+				    			Exit Sub
+				    		Else
+				    			sDomain=Trim(document.getElementById("strPromptDomain").Value)
+				    		End If
+			    		
+		       		ElseIf Not SkipDomainName="YES" Then
+		       		
+				       		If Len(Trim(document.getElementById("DomainName").Value)) =0 Then
+				    			MsgBox "Please enter a Domain name...",,"Field Control"
+				    			document.getElementById("DomainName").focus
+				    			Exit Sub
+				    		Else
+				    			sDomain=Trim(document.getElementById("DomainName").Value)
+				    		End If
+		    		End If
+		    
+		    	'check DomainOU	    
+					If PromptForDomainOU="YES" Then
+		    			
+			    			If Len(Trim(document.getElementById("strPromptDomainOU").Value)) =0 Then
+				    			MsgBox "Please enter the Machine Object OU in LDAP format...",,"Field Control"
+				    			document.getElementById("strPromptDomainOU").focus
+				    			Exit Sub
+				    		Else
+				    			sDomainOU=Trim(document.getElementById("strPromptDomainOU").Value)
+				    		End If
+			    		
+			     	ElseIf Not SkipDomainOU="YES" Then
+			     	
+				     		If Len(Trim(document.getElementById("DomainOU").Value)) =0 Then
+			    				MsgBox "Please enter a Machine Object OU...",,"Field Control"
+			    				document.getElementById("DomainOU").focus
+			    				Exit Sub
+			    			Else
+				    			sDomainOU=Trim(document.getElementById("DomainOU").Value)
+				    		End If
+				    		
+			     	End If
+			     	
+		       	'check UserDomain
+				If PromptForDomainUser="YES" Then
+		    			
+		    			If Len(Trim(document.getElementById("strPromptDomainUser").Value)) =0 Then
+			    			MsgBox "Please enter a Domain User Name...",,"Field Control"
+			    			document.getElementById("strPromptDomainUser").focus
+			    			Exit Sub
+			    		Else
+			    			sDomainUser=Trim(document.getElementById("strPromptDomainUser").Value)
+			    		End If
+			    	
+		       		ElseIf Not SkipDomainUser="YES" Then
+			       	    If Len(Trim(document.getElementById("DomainUser").Value)) =0 Then
+			    			MsgBox "Please enter a User account name...",,"Field Control"
+			    			document.getElementById("DomainUser").focus
+			    			Exit Sub
+			    		Else
+			    			sDomainUser=Trim(document.getElementById("DomainUser").Value)
+			    		End If
+		       		End If
+		       		
+       	'check DomainUserPassword
+	If PromptForDomainUserPassword="YES" Then
+    			
+			If Len(Trim(document.getElementById("strPromptDomainUserPwd").Value)) = 0 Then
+    			MsgBox "Please Enter a password for the 'User account' you entered above...",,"Field Control"
+    			document.getElementById("strPromptDomainUserPwd").focus
+    			Exit Sub
+    		End If
+	    		
+	    	If document.getElementById("strPromptDomainUserPwd2").Value <> document.getElementById("strPromptDomainUserPwd").Value Then
+    			MsgBox "Please enter the same password for both 'Password' and 'Confirm Password' fields...",,"Field Control"
+    			document.getElementById("strPromptDomainUserPwd").value=""
+    			document.getElementById("strPromptDomainUserPwd2").value=""
+    			document.getElementById("strPromptDomainUserPwd").focus
+    			Exit Sub
+    			
+    		Else
+	    		sDomainUserPassword=Trim(document.getElementById("strPromptDomainUserPwd").Value)
+    		
+    		End If
+	    		
+	    		
+	    	
+       	ElseIf Not SkipDomainUserPassword="YES" Then
+       		If Len(Trim(document.getElementById("DomainUserPassword").Value)) =0 Then
+    			MsgBox "Please Enter a password for the 'User account' you entered above...",,"Field Control"
+    			document.getElementById("DomainUserPassword").focus
+    			Exit Sub
+    		
+	    	End If
+    		
+       		If document.getElementById("DomainUserPassword2").Value <> document.getElementById("DomainUserPassword").Value Then
+    			MsgBox "Please enter the same password for both 'Password' and 'Confirm Password' fields...",,"Field Control"
+    			document.getElementById("DomainUserPassword").value=""
+    			document.getElementById("DomainUserPassword2").value=""
+    			document.getElementById("DomainUserPassword").focus
+    			Exit Sub
+    			
+    		Else
+	    		sDomainUserPassword=Trim(document.getElementById("DomainUserPassword").Value)
+    		
+    		End If
+    		
+	    End If
+			    	        
+		    End If
+	Else
+		If PromptForWorkgroup="YES" Then
+			If Len(Trim(document.getElementById("WorkgroupName").value))=0 Then
+				MsgBox "Please Enter a 'Workgroup' name ...",,"Field Control"
+				document.getElementById("WorkgroupName").focus
+				Exit Sub
+			Else
+				sWorkgroup=Trim(document.getElementById("WorkgroupName").Value)
+	    	End If
+    	End If
+    	
+    End If
+    
+    strMsg=" Do you confirm your selected options?" & vbLf
+    
+    If Msgbox(strMsg,4,"Confirmation?") = vbYES  Then
+			document.body.style.cursor = "wait"
+			WriteLog "User selection confirmed"
+			WriteLog "Creating the OSDProfile.ini file..."
+			UpdateInifiles
+			WriteLog "Closing the HTA Form..."
+			window.Close
+			Writelog "====================================================================================="
+			WriteLog "Script " & sScriptName & " execution is completed."
+			Writelog "====================================================================================="
+	End If
+
+End Sub   
+
+Function txtOption(sField) 
+       
+	 For Each objOption in document.getElementById(sField).Options
+	 	'MsgBox objOption.Value
+	    If objOption.Value = document.getElementById(sField).value Then
+	       	txtOption =objOption.text
+			Exit for
+	    End If
+	Next
+	
+End Function
+
+
+Function GetTheParent(DriveSpec)
+	Set objFSO = CreateObject("Scripting.FileSystemObject")
+   GetTheParent = objFSO.GetParentFolderName(Drivespec)
+End Function
+
+
+Sub GetProfile
+
+	Dim i
+	Dim objTextFile
+	Dim strValue
+	Dim line
+	Dim sSeparator
+	Dim temparray
+	Dim j
+	Dim objOption
+	
+	On Error Resume Next
+	
+	Set objFSO = CreateObject("Scripting.FileSystemObject")
+	Set objTextFile = objFSO.OpenTextFile(sSettingsIniFile, ForReading)
+			
+	do while ddProfileName.length>0
+		ddProfileName.remove(0)
+	Loop
+	
+	strValue =""
+    Set objOption = Document.createElement("OPTION")
+	objOption.Text = strValue
+	objOption.Value = strValue
+	ddProfileName.Add(objOption)
+	
+	Do Until objTextFile.AtEndOfStream
+		line = Trim(objTextFile.Readline)
+			
+		If UCase(Trim(line))= UCase("[Profile]") and (not objTextFile.AtEndOfStream) then           
+			
+			line = Trim(objTextFile.Readline)
+			
+			Do While Left( line, 1) <> "["
+			
+				If Left(line,1) =";" Or Len(Trim(line))=0 Then
+					'skip this line
+				Else	
+					
+					line=mid(line,instr(line,"=")+1)
+					sSeparator=","
+					
+					If InStr (1,line, ",",1) > 0 Then 
+						sSeparator=","
+						
+					ElseIf InStr (1,line, ";",1) > 0 Then
+						sSeparator=";"
+					End If
+					
+					temparray=Split(line,sSeparator)
+					
+					For j=0 To UBound(temparray)
+						Set objOption = Document.createElement("OPTION")
+						objOption.Text = temparray(j)
+						objOption.Value = temparray(j)
+						ddProfileName.Add(objOption)
+			
+					Next
+					
+				End If
+
+				If objTextFile.AtEndOfStream Then Exit Do
+				line = objTextFile.ReadLine
+				line = Trim(line)
+				
+			Loop
+			Exit Do
+			
+		End If
+	Loop
+			
+	objTextFile.Close
+	
+End Sub
+
+
+Sub GetDetailsFromProfile
+	
+	Dim i
+   	Dim strValue
+   	Dim line
+   	Dim leftstring
+   	Dim rightline
+   	Dim objTextFile
+	Dim sSeparator, equalpos
+	Dim temparray, oXMLDoc, node, sRefeName, sShortName
+	Dim j
+	Dim objOption, op
+   	
+   	strValue =""
+   	
+	Set objTextFile = objFSO.OpenTextFile(sSettingsIniFile, ForReading)
+	i=0
+	
+	Do Until objTextFile.AtEndOfStream
+		
+		line = Trim(objTextFile.Readline)
+		
+		If UCase(Trim(line))= UCase("["& document.getElementById("ddProfileName").value &"]") and (not objTextFile.AtEndOfStream) then           
+			
+			sProfileName=Trim(document.getElementById("ddProfileName").value)
+			
+			line = Trim(objTextFile.Readline)
+			
+			Do While Left( line, 1) <> "["
+			
+				If Left(line,1) =";" Or Len(Trim(line))=0 Then
+					'skip this line
+				Else
+					equalpos = InStr(1, line, "=", 1 )
+					
+						If equalpos > 0 Then
+						
+							leftstring = Left(line, equalpos - 1 )
+							leftstring = Trim(leftstring)
+							rightline=Trim(Mid(line, equalpos +1))
+						
+							
+						'get apps ID from selected profile
+							If UCase(Left(leftstring,11)) = UCase("Application") then  
+							 	If i=0 Then
+									ReDim sArrayProfileApps(i)
+								Else
+									ReDim Preserve sArrayProfileApps(i)
+								End If
+								
+								If Len (rightline) > 0 Then 
+									sArrayProfileApps(i)=rightline	
+												
+									i=i+1
+								End If
+							End If 
+								
+						End If 
+				End If
+	
+				If objTextFile.AtEndOfStream Then Exit Do
+				line = objTextFile.ReadLine
+				line = Trim(line)
+			Loop
+			Exit Do
+			
+		End If
+	Loop				
+	objTextFile.Close
+	
+	If i > o Then bFoundProfileApps=True
+	
+End Sub
+
+
+Sub UpdateInifiles
+	Dim sCmd, strID, objTextFile, j
+	
+	
+	'Create OSDProfile.ini
+	WriteLog "Adding selected settings from HTA to file: " & sOSDProfileIniFile
+	
+	Set objTextFile=objFSO.CreateTextFile(sOSDProfileIniFile) 
+	objTextFile.WriteLine "[Main]"
+	
+	WriteLog "Adding line: [Main]"
+		
+	If Len(Trim(sLocationName)) > 0 Then
+		objTextFile.WriteLine "Selected=" & sLocationName
+		WriteLog "Adding line: Selected=" & sLocationName
+		objTextFile.WriteLine ""
+		
+		objTextFile.WriteLine "[" & sLocationName & "]"
+		WriteLog "Adding line: " & "[" & sLocationName & "]"
+	Else
+	      If Len(Trim(sRegionName)) > 0 Then
+			objTextFile.WriteLine "Selected=" & sRegionName
+			objTextFile.WriteLine ""
+			objTextFile.WriteLine "[" & sRegionName & "]"
+	      Else
+				If Len(Trim(sUserLocale)) > 0 Then 
+					objTextFile.WriteLine "Selected=" & sUserLocale
+					WriteLog "Adding line: Selected=" & sUserLocale
+					objTextFile.WriteLine ""
+					objTextFile.WriteLine "[" & sUserLocale & "]"
+					WriteLog "Adding line: "& "[" & sUserLocale & "]"
+				Else
+					objTextFile.WriteLine "Selected=CUSTOM"
+					WriteLog "Adding line: Selected=CUSTOM"
+					objTextFile.WriteLine ""
+					objTextFile.WriteLine "[CUSTOM]"
+					WriteLog "Adding line: " & "[CUSTOM]"
+				End If
+	      End If
+	End if
+		
+	If Len(Trim(sSystemLocale)) > 0 Then 
+		objTextFile.WriteLine "SystemLocale=" & sSystemLocale
+		WriteLog "Adding line: SystemLocale=" & sSystemLocale
+	End If
+	If Len(Trim(sUserLocale)) > 0 Then 
+		objTextFile.WriteLine "UserLocale=" & sUserLocale
+		WriteLog "Adding line: UserLocale=" & sUserLocale
+	End If
+	
+	If sMultiInputLocalePerLocation="YES" Then  
+		
+		If  Not (SkipInputLocale)="YES" Then
+		
+			sInputLocale=ddInputLocale.value
+			
+			For j = 0 to ddInputLocale.options.length - 1	
+				
+				If ddInputLocale.options(j).value = ddInputLocale.value Then
+				
+					'skip
+					
+				ElseIf Len(ddInputLocale.options(j).value) > 0 Then
+						sInputLocale=sInputLocale & ";" & ddInputLocale.options(j).value
+				End If
+				
+			Next
+		
+			objTextFile.WriteLine "InputLocale=" & Trim(sInputLocale)
+			WriteLog "Adding line: InputLocale=" & Trim(sInputLocale)
+		End If
+		
+			
+	Else
+	
+			If Len(Trim(sKeybLayoutID)) > 0 And Not InStr(1, Trim(sKeybLayoutID), "-", 1 ) > 0  Then 
+				
+				
+				If Len(Trim(sUserLocale)) > 0 Then
+					
+					If Not (SkipUserLocale)="YES" Then 
+					
+						Set oXMLDoc = CreateObject("Microsoft.XMLDOM") 
+						oXMLDoc.async = False 
+						oXMLDoc.load(sLocalesXmlFile)
+					    For each node in oXMLDoc.DocumentElement.childNodes
+					    	
+								sName= node.selectSingleNode("SName").text
+						        If UCase(sName)=UCase(ddUserLocale.value) then 
+						        
+						        	strID = node.getAttribute("ID")
+							    	While len(strID) < 4
+										strID ="0"& strID
+									Wend
+									Exit for
+					        End If	        
+					    Next
+				    Else
+				    	Set oXMLDoc = CreateObject("Microsoft.XMLDOM") 
+						oXMLDoc.async = False 
+						oXMLDoc.load(sLocalesXmlFile)
+					    For each node in oXMLDoc.DocumentElement.childNodes
+					    	
+								sName= node.selectSingleNode("SName").text
+						        If UCase(sName)=UCase(sUserLocale) then 
+						        
+						        	strID = node.getAttribute("ID")
+							    	While len(strID) < 4
+										strID ="0"& strID
+									Wend
+									Exit for
+					        End If	        
+					    Next
+				    End If
+				    
+				    
+				    
+					objTextFile.WriteLine "InputLocale=" & strID & ":" & sKeybLayoutID
+					WriteLog "Adding line: InputLocale=" & strID & ":" & sKeybLayoutID
+				Else
+				
+					objTextFile.WriteLine "InputLocale=" & Right(sKeybLayoutID,4) & ":" & sKeybLayoutID
+					WriteLog "Adding line: InputLocale=" & Right(sKeybLayoutID,4) & ":" & sKeybLayoutID
+				End If
+				
+			ElseIf Len(Trim(sInputLocale)) > 0 Then 
+				objTextFile.WriteLine "InputLocale=" & sInputLocale
+				WriteLog "Adding line: InputLocale=" & sInputLocale
+			End If
+	End If
+		
+	
+	If Len(Trim(sUILanguage)) > 0 Then 
+		objTextFile.WriteLine "UILanguage=" & sUILanguage
+		WriteLog "Adding line: UILanguage=" & sUILanguage
+	End If
+	
+	If Len(Trim(sCountryID)) > 0 Then 
+		objTextFile.WriteLine "Country=" & sCountryID
+		WriteLog "Adding line: Country /GeoID=" & sCountryID
+	End If
+	
+	If Len(Trim(sComputername)) > 0 Then 
+		objTextFile.WriteLine "Computername=" & sComputername
+		WriteLog "Adding line: Computername=" & sComputername
+	End If
+	
+	If Len(Trim(sTimeZone)) > 0 Then 
+		objTextFile.WriteLine "TimeZone=" & sTimeZone
+		WriteLog "Adding line: TimeZone=" & sTimeZone
+	End If
+	
+	If UCase(sJoin)=UCase("Workgroup") Then
+			objTextFile.WriteLine "Join=" & sJoin
+			WriteLog "Adding line: Join=" & sJoin
+			objTextFile.WriteLine "Workgroup=" & sWorkgroup
+			WriteLog "Adding line: Workgroup=" & sWorkgroup
+			
+	ElseIf UCase(sJoin)=UCase("Domain") Then
+			objTextFile.WriteLine "Join=" & sJoin
+			WriteLog "Adding line: Join=" & sJoin
+					
+			If Len(Trim(sDomain)) > 0 Then 
+				objTextFile.WriteLine "Domain=" & sDomain
+				WriteLog "Adding line: Domain=" & sDomain
+			End If
+			
+			If Len(Trim(sDomainOU)) > 0 Then 
+				If InStr(1,UCase(Trim(sDomainOU)),ucase("<%Desktop%/%Laptop%>"),1) > 0 Then
+				 	If UCase(GetType)=UCase("Desktop") Then
+				 	
+					 		If Len(Trim(sDesktopOUName)) > 0 Then
+					 			sDomainOU=ReplaceString(sDomainOU,"<%Desktop%/%Laptop%>", sDesktopOUName)
+					 		Else
+					 			sDomainOU=ReplaceString(sDomainOU,"<%Desktop%/%Laptop%>", "Desktop")	
+					 		End If
+					 		
+				 	ElseIf UCase(GetType)=UCase("Laptop") Then
+					 		If Len(Trim(sDesktopOUName)) > 0 Then
+					 			sDomainOU=ReplaceString(sDomainOU,"<%Desktop%/%Laptop%>", sLaptopOUName)
+					 		Else
+					 			sDomainOU=ReplaceString(sDomainOU,"<%Desktop%/%Laptop%>", "Laptop")
+					 		End If
+					 		
+				 	End If
+				End If
+
+				objTextFile.WriteLine "DomainOU=" & sDomainOU
+				WriteLog "Adding line: DomainOU=" & sDomainOU
+			End If
+			
+			If Len(Trim(sDomainUser)) > 0 Then
+			 	objTextFile.WriteLine "DomainUser=" & sDomainUser
+			 	WriteLog "DomainUser=" & sDomainUser
+			End If
+			 
+			If Len(Trim(sDomainUserPassword)) > 0 Then
+			 	objTextFile.WriteLine "DomainUserPassword=" & sDomainUserPassword
+			 	WriteLog "Adding line: DomainUserPassword=" & sDomainUserPassword
+			End If
+	End If
+	
+	If Len(Trim(sIPAddress)) > 0 Then objTextFile.WriteLine "IPAddress=" & sIPAddress
+	If Len(Trim(sGatewayAddress)) > 0 Then objTextFile.WriteLine "GatewayAddress=" & sGatewayAddress
+	If Len(Trim(sPrimDNSAddress)) > 0 Then objTextFile.WriteLine "PrimaryDNS=" & sPrimDNSAddress
+	If Len(Trim(sSecDNSAddress)) > 0 Then objTextFile.WriteLine "SecondaryDNS=" & sSecDNSAddress
+
+	If Len(Trim(sRegionName)) > 0 Then objTextFile.WriteLine "REGION=" & sRegionName
+	
+	If Len(Trim(sRunCommand)) > 0 Then
+		If InStr (1, UCase(sRunCommand),"%UILANGUAGE%",1) > 0 Then
+			sRunCommand=ReplaceString(UCase(sRunCommand),"%UILANGUAGE%", sUILanguage)
+		End If
+		objTextFile.WriteLine "RunCommand=" & sRunCommand
+	End If
+	
+	'Add common applications to OSDProfile.ini
+	If bFoundCommonApps=True Then 
+		iIndexCommApps=UBound(sArrayCommonApps)+1
+		If UBound(sArrayCommonApps)> 0 Then
+				
+				For i=0 To UBound(sArrayCommonApps)-1
+						If Len(i)=1 Then
+								If  i < 9 Then 
+									sAppProperty="Application00" & i+1
+								Else
+									sAppProperty="Application0" & i+1
+								End If
+						ElseIf Len(i)=2 Then
+								If  i < 99 Then 
+									sAppProperty="Application0" & i+1
+								Else
+									sAppProperty="Application" & i+1
+								End If
+						Else
+							sAppProperty="Application" & i+1
+						End If
+						
+					 objTextFile.WriteLine sAppProperty & "=" & sArrayCommonApps(i)
+					 
+					 WriteLog "Adding line: " & sAppProperty  & "="  & sArrayCommonApps(i)
+				Next
+		End If
+	
+	
+	Else
+		
+		iIndexCommApps=1
+	
+	End If
+	
+	'add Application per location to OSDProfile.ini if any	
+	If sAppsPerLocation= "YES" Then
+		
+		If bFoundLocApps=True Then 
+			
+			If iIndexCommApps=0 Then iIndexCommApps=1
+					
+			For i=0 To UBound(sArrayLocApps)
+				
+					If Len(i)=1 Then
+							If  i < 9 Then 
+								sAppProperty="Application00" & i+ iIndexCommApps
+							Else
+								sAppProperty="Application0" & i+ iIndexCommApps
+							End If
+							
+					ElseIf Len(i)=2 Then
+							If  i < 99 Then 
+								sAppProperty="Application0" & i+ iIndexCommApps
+							Else
+								sAppProperty="Application" & i+ iIndexCommApps
+							End If
+							
+					Else
+						sAppProperty="Application" & i+ iIndexCommApps
+					End If
+					
+				 objTextFile.WriteLine sAppProperty & "=" & sArrayLocApps(i)
+				 
+				 WriteLog "Adding line: " & sAppProperty  & "="  & sArrayLocApps(i)
+				
+				
+			Next
+			
+			iIndexLocApps=i+ iIndexCommApps
+			
+		End If
+		
+	End If
+	
+		'add Application per Profile to OSDProfile.ini	
+	If sAppsPerProfile= "YES" Then
+		
+		If iIndexLocApps=0 Then iIndexLocApps=1
+		
+		If bFoundProfileApps=True Then 
+				
+			For i=0 To UBound(sArrayProfileApps)
+				If Len(i)=1 Then
+							If  i < 9 Then 
+								sAppProperty="Application00" & i+ iIndexLocApps
+							Else
+								sAppProperty="Application0" & i+ iIndexLocApps
+							End If
+							
+					ElseIf Len(i)=2 Then
+							If  i < 99 Then 
+								sAppProperty="Application0" & i+ iIndexLocApps
+							Else
+								sAppProperty="Application" & i+ iIndexLocApps
+							End If
+							
+					Else
+						sAppProperty="Application" & i+ iIndexLocApps
+					End If
+					
+				 objTextFile.WriteLine sAppProperty & "=" & sArrayProfileApps(i)
+				 
+				 WriteLog "Adding line: " & sAppProperty  & "="  & sArrayProfileApps(i)
+				
+				
+			Next
+		End If
+		
+	End If
+
+	
+	objTextFile.Close
+	
+End Sub
+
+
+sub ButtonCancelClick
+	If Msgbox("Are you sure you want to cancel?",4,"Cancel wizard?") = vbYES Then
+		window.Close
+	End If
+end sub
+
+Function ReplaceString(str1,patrn, replStr)
+  Dim regEx               ' Create variables.
+  Set regEx = New RegExp            ' Create regular expression.
+  regEx.Pattern = patrn            ' Set pattern.
+  regEx.IgnoreCase = True            ' Make case insensitive.
+  ReplaceString = regEx.Replace(str1, replStr)   ' Make replacement.
+End Function
+
+Function ValidateComputerName
+	Dim ComputerName
+
+	ComputerName= UCase(strHostName.value)
+
+	If Len(Trim(ComputerName))=0 Or Len(Trim(ComputerName)) >=16  Then
+		ValidateComputerName=False
+	End If
+	
+	Dim regEx
+	Set regEx = New RegExp 
+	regEx.Pattern = "[^a-zA-Z0-9\-\_]"   'Strict Subset
+	ValidateComputerName= not regEx.Test ( ComputerName ) and len(ComputerName) <= 15
+
+End Function
+
+Function CheckIP(strString, strPattern)
+    if RegExIsMatch(strString, strPattern) Then
+        CheckIP="Pass"
+    else
+        CheckIP="Fail"
+    end if
+End Function
+
+Function RegExIsMatch(strString,strPattern)
+    Dim RegEx
+    RegExMatch=False
+
+    Set RegEx = New RegExp                
+    RegEx.IgnoreCase = True                
+    RegEx.Global=True                   
+    RegEx.Pattern=strPattern
+
+    If RegEx.Test(strString) Then RegExIsMatch=True
+End Function 
+
+' --------------------------------------------
+' if scripting object "Microsoft.SMS.TSEnvironment" can be created
+' then Returnvalue = true and Object is created
+' else Returnvalue = false
+' --------------------------------------------
+Function Script_Started_from_TS
+	
+    Err.Clear
+	On Error Resume Next
+	Script_Started_from_TS = False
+    Set oTaskSequence = CreateObject("Microsoft.SMS.TSEnvironment")
+	If Err.Number  <> 0 Then
+		WriteLog "Not running from Task sequence."
+		On Error Goto 0
+		Script_Started_from_TS = False		
+		Exit Function
+	End If
+	On Error Goto 0
+	Script_Started_from_TS  = True
+
+End Function
+
+
+Function ReadIni(file, section, item)
+
+		Dim line, equalpos, leftstring, ini
+
+		ReadIni = ""
+		file = Trim(file)
+		item = Trim(item)
+
+		On Error Resume Next
+	
+		Set ini = objFSO.OpenTextFile( file, 1, False)
+		
+		If Err then
+			Err.Clear
+			Exit Function
+		End if
+		On Error Goto 0
+
+		Do While (not ini.AtEndOfStream)
+			line = ini.ReadLine
+			line = Trim(line)
+			If LCase(line) = "[" & LCase(section) & "]" and (not ini.AtEndOfStream) Then
+				line = ini.ReadLine
+				line = Trim(line)
+				Do While Left( line, 1) <> "["
+					'If InStr( 1, line, item & "=", 1) = 1 Then
+					equalpos = InStr(1, line, "=", 1 )
+					If equalpos > 0 Then
+						leftstring = Left(line, equalpos - 1 )
+						leftstring = Trim(leftstring)
+						If LCase(leftstring) = LCase(item) Then
+							ReadIni = Mid( line, equalpos + 1 )
+							ReadIni = Trim(ReadIni)
+							Exit Do
+						End If
+					End If
+
+					If ini.AtEndOfStream Then Exit Do
+					line = ini.ReadLine
+					line = Trim(line)
+				Loop
+				Exit Do
+			End If
+		Loop
+		ini.Close
+
+End Function
+
+' WRITEINI ( file, section, item, myvalue )
+' file = path and name of ini file
+' section = [Section] must not be in brackets
+' item = the variable to write;
+' myvalue = the myvalue to assign to the item.
+'
+Sub WriteIni( file, section, item, myvalue )
+Dim in_section, section_exists, item_exists, wrote
+Dim itemtrimmed, temp_ini, read_ini, write_ini
+Dim line, linetrimmed, equalpos, TristateFalse, leftstring 
+	
+	in_section = False
+	section_exists = False
+	item_exists = ( ReadIni( file, section, item ) <> "" )
+
+	wrote = False
+	file = Trim(file)
+	itemtrimmed = Trim(item)
+	myvalue = Trim(myvalue)
+
+	temp_ini = sScriptDir & objFSO.GetTempName
+
+	Set read_ini = objFSO.OpenTextFile( file, 1, True, TristateFalse )
+	Set write_ini = objFSO.CreateTextFile( temp_ini, False)
+
+	While read_ini.AtEndOfStream = False
+		line = read_ini.ReadLine
+		linetrimmed = Trim(line)
+		If wrote = False Then
+			If LCase(line) = "[" & LCase(section) & "]" Then
+				section_exists = True
+				in_section = True
+			ElseIf InStr( line, "[" ) = 1 Then
+				in_section = False
+			End If
+		End If
+
+		If in_section Then
+			If item_exists = False Then
+				write_ini.WriteLine line
+				write_ini.WriteLine item & "=" & myvalue
+				wrote = True
+				in_section = False
+			Else
+				equalpos = InStr(1, line, "=", 1 )
+				If equalpos > 0 Then
+					leftstring = Left(line, equalpos - 1 )
+					leftstring = Trim(leftstring)
+					If LCase(leftstring) = LCase(item) Then
+						write_ini.WriteLine itemtrimmed & "=" & myvalue
+						wrote = True
+						in_section = False
+					End If
+				End If
+				If Not wrote Then
+					write_ini.WriteLine line
+				End If
+			End If
+		Else
+				equalpos = InStr(1, line, "=", 1 )
+				If equalpos > 0 Then
+					leftstring = Left(line, equalpos - 1 )
+					leftstring = Trim(leftstring)
+					rightsring=Right (line, Len(line) - (Len(leftstring)+1) )
+					If LCase(leftstring) = LCase(item) then
+						If Len(rightsring) =0  Then
+							'do nothing
+						End if
+					Else
+						write_ini.WriteLine line
+					End If
+				Else
+					write_ini.WriteLine line
+				End If
+			
+		End If
+	Wend
+
+	If section_exists = False Then ' section doesn't exist
+		write_ini.WriteLine
+		write_ini.WriteLine "[" & section & "]"
+		write_ini.WriteLine itemtrimmed & "=" & myvalue
+
+	End If
+
+	read_ini.Close
+	write_ini.Close
+	If objFSO.FileExists(file) then
+		objFSO.DeleteFile file, True
+	End if
+	objFSO.CopyFile temp_ini, file, true
+	objFSO.DeleteFile temp_ini, True
+
+End Sub
+		
+
+Sub HideUnhideDomain
+
+	'check Domain or workgroup
+	For Each objButton in JoinSystem
+        If objButton.Checked Then
+             
+         Select Case objButton.Value
+
+		    Case "Workgroup"
+		    
+				    	If PromptForDomain="YES" Then
+				    			document.getElementById("lblPromptDomain").style.visibility="hidden"
+						    	document.getElementById("strPromptDomain").style.visibility="hidden"
+						    	'document.getElementById("strPromptDomain").value=""
+				    	Else
+						    	If Not SkipDomainName="YES" Then
+						    		document.getElementById("lblDomainName").style.visibility="hidden"
+						    		document.getElementById("DomainName").style.visibility="hidden"
+						    		'document.getElementById("DomainName").value=""
+						    	End If
+						End If
+							
+						If PromptForDomainOU="YES" Then
+								document.getElementById("lblPromptDomainOU").style.visibility="hidden"
+				    			document.getElementById("strPromptDomainOU").style.visibility="hidden"
+				    			'document.getElementById("strPromptDomainOU").value=""
+						Else
+								If Not SkipDomainOU="YES" Then
+					    			document.getElementById("lblDomainOU").style.visibility="hidden"
+					    			document.getElementById("DomainOU").style.visibility="hidden"
+					    			'document.getElementById("DomainOU").value=""
+						    	End If
+						End If    	
+						    	
+						If PromptForDomainUser="YES" Then
+								
+								document.getElementById("lblPromptCredentials").style.visibility="hidden"
+								document.getElementById("lblPromptDomainUser").style.visibility="hidden"
+					        	document.getElementById("strPromptDomainUser").style.visibility="hidden"
+					        	'document.getElementById("strPromptDomainUser").value=""
+						Else
+			    				If Not SkipDomainUser="YES" Then
+			    					document.getElementById("lblPromptCredentials").style.visibility="hidden"
+						        	document.getElementById("lblDomainUser").style.visibility="hidden"
+						        	document.getElementById("DomainUser").style.visibility="hidden"
+						        	'document.getElementById("DomainUser").value=""
+						        End If
+			    		End If    	
+						    	
+						If PromptForDomainUserPassword="YES" Then
+								document.getElementById("lblPromptDomainUserPwd").style.visibility="hidden"
+						        document.getElementById("strPromptDomainUserPwd").style.visibility="hidden"
+						        document.getElementById("strPromptDomainUserPwd").value=""
+						        document.getElementById("lblPromptDomainUserPwd2").style.visibility="hidden"
+						        document.getElementById("strPromptDomainUserPwd2").style.visibility="hidden"
+						        document.getElementById("strPromptDomainUserPwd2").value=""
+						Else				                        		
+			    				If Not SkipDomainUserPassword="YES" Then
+						    		document.getElementById("lblDomainUserPassword").style.visibility="hidden"
+						    		document.getElementById("lblDomainUserPassword2").style.visibility="hidden"
+						        	document.getElementById("DomainUserPassword").style.visibility="hidden"
+						        	document.getElementById("DomainUserPassword2").style.visibility="hidden"
+						        	document.getElementById("DomainUserPassword").value=""
+						        	document.getElementById("DomainUserPassword2").value=""
+						        End If
+						End If     	
+				        
+				        document.getElementById("WorkgroupName").disabled="false"
+				        document.getElementById("WorkgroupName").value=sDefaultWorkgroup
+				        
+				        SkipDomainJoin="YES"
+				        sJoin="Workgroup"
+		        
+		    Case "Domain"
+		        
+				        If PromptForDomain="YES" Then
+				    			document.getElementById("lblPromptDomain").style.visibility="visible"
+						    	document.getElementById("strPromptDomain").style.visibility="visible"
+						    	'document.getElementById("strPromptDomain").value=""
+				    	Else
+						    	If Not SkipDomainName="YES" Then
+						    		document.getElementById("lblDomainName").style.visibility="visible"
+						    		document.getElementById("DomainName").style.visibility="visible"
+						    		'document.getElementById("DomainName").value=""
+						    	End If
+						End If
+							
+						If PromptForDomainOU="YES" Then
+								document.getElementById("lblPromptDomainOU").style.visibility="visible"
+				    			document.getElementById("strPromptDomainOU").style.visibility="visible"
+				    			'document.getElementById("strPromptDomainOU").value=""
+						Else
+								If Not SkipDomainOU="YES" Then
+					    			document.getElementById("lblDomainOU").style.visibility="visible"
+					    			document.getElementById("DomainOU").style.visibility="visible"
+					    			'document.getElementById("DomainOU").value=""
+						    	End If
+						End If    	
+						    	
+						If PromptForDomainUser="YES" Then
+								document.getElementById("lblPromptCredentials").style.visibility="visible"
+								document.getElementById("lblPromptDomainUser").style.visibility="visible"
+					        	document.getElementById("strPromptDomainUser").style.visibility="visible"
+					        	'document.getElementById("strPromptDomainUser").value=""
+						Else
+			    				If Not SkipDomainUser="YES" Then
+			    					document.getElementById("lblPromptCredentials").style.visibility="visible"
+						        	document.getElementById("lblDomainUser").style.visibility="visible"
+						        	document.getElementById("DomainUser").style.visibility="visible"
+						        	'document.getElementById("DomainUser").value=""
+						        End If
+			    		End If    	
+						    	
+						If PromptForDomainUserPassword="YES" Then
+								document.getElementById("lblPromptDomainUserPwd").style.visibility="visible"
+						        document.getElementById("strPromptDomainUserPwd").style.visibility="visible"
+						        document.getElementById("strPromptDomainUserPwd").value=""
+						        document.getElementById("lblPromptDomainUserPwd2").style.visibility="visible"
+						        document.getElementById("strPromptDomainUserPwd2").style.visibility="visible"
+						        document.getElementById("strPromptDomainUserPwd2").value=""
+						Else				                        		
+			    				If Not SkipDomainUserPassword="YES" Then
+						    		document.getElementById("lblDomainUserPassword").style.visibility="visible"
+						    		document.getElementById("lblDomainUserPassword2").style.visibility="visible"
+						        	document.getElementById("DomainUserPassword").style.visibility="visible"
+						        	document.getElementById("DomainUserPassword2").style.visibility="visible"
+						        	document.getElementById("DomainUserPassword").value=""
+						        	document.getElementById("DomainUserPassword2").value=""
+						        End If
+						End If     	
+						
+				        SkipDomainJoin="NO"
+				        sJoin="Domain" 
+				        
+				       document.getElementById("WorkgroupName").disabled="true"
+				       'document.getElementById("WorkgroupName").value=""
+		        
+		    End Select
+             
+        End If
+    Next
+End Sub
+
+Function WriteLog(sLogMsg)
+
+		Dim sTime, sDate, sTempMsg, oLog, oConsole
+
+		On Error Resume Next		
+		' Suppress messages containing password
+		If not strDebug then
+			If Instr(1, sLogMsg, "password", 1) > 0 then
+				sLogMsg = "<Message containing password has been suppressed>"
+			End if
+		End if
+
+		' Populate the variables to log
+			sTempMsg = "[LOG]:" & " Date: " & Date & " " & Time  & " Message: " &  sLogMsg
+			
+		' If debug, echo the message
+		If strDebug then
+			Set oConsole = objFSO.GetStandardStream(1) 
+			oConsole.WriteLine sLogMsg
+		End if
+
+		' Create the log entry
+		Err.Clear
+		Set oLog = objFSO.OpenTextFile(LogFile, ForAppending, True)
+		
+		If Err then
+			Err.Clear
+			Exit Function
+		End if
+		oLog.WriteLine sTempMsg
+		oLog.Close
+		Err.Clear
+
+End Function
+
+</script>
+<!--
+' // //Prevent the abort of the HTA page if pressing Alt-F4 
+-->
+ <SCRIPT LANGUAGE="JavaScript">  
+function document.onkeydown() {   
+      var alt=window.event.altKey;  
+      if (alt && event.keyCode==115) {  
+           event.keyCode=0;  
+          event.cancelBubble=true;  
+           return false;  
+           }  
+     } 
+ </SCRIPT>  
+ 
+</head>
+
+<body Language="VBScript">
+        <!-- Create a 2 x 3 table to place all of our content in. Makes resizing of windows easier -->
+        <table cellpadding="0" cellspacing="0" border="0" width="100%" style="height: 100%;">
+
+		<!-- Header of Wizard -->
+           <!-- Header -->
+			<tr valign="top">
+				<td colspan="2" >
+					<div id="MyHeader" class="HeaderArea" >
+
+					<img id="bannerImage"  class="HeaderBackground" src="header-image.png">
+					<img id=MyHeaderIcon class="HeaderIcon" src="logo.png">
+					<span id=MyHeaderTitle class="HeaderTitle"></span>
+				
+					</div>
+				</td>
+			</tr>
+			
+            <!-- Content Area of Wizard -->
+                           
+            <tr>
+				<td  align=left valign=top style="background-color: #F0F0F0; ">
+					<div id="MyNavigationArea" class="NavigationArea" style="background-color: #F0F0F0; padding: 8px 0px 0px 0px;">
+
+						<!-- Navigation will go HERE! -->
+						
+						<table style="width: 100%;">
+							<tr>
+								<td style="width:1px;">
+								<!-- 	<img src="DeployWiz_logo.png">-->
+								</td>
+							<!--	<td style="width: 120px;"><span class=Larger>Localisation & Computer Details</span></td>-->
+							
+							</tr>
+						</table>
+						
+					</div>
+				</td>
+                   
+                <td halign="left" valign=top style="background-color: #F0F0F0; width: expression( Math.max(documentElement.offsetWidth, 80));">
+                 
+                    <div id="MyContentArea" class="ContentArea">  
+                        <span style="width: 100%;">
+                        	                        	
+                            <table  cellpadding="1" cellspacing="1" border="0" width="100%" style="height: 100%;"> 
+                           
+							<!--	<tr>
+									<td colspan="5" style="height:10" class="style2"></td>
+                                </tr> -->
+                             
+                                <script LANGUAGE="VBScript">
+                                		If Not SkipRegion="YES" Then
+			                                document.write("<tr>")
+			                            	document.write("<td  style=""width:22%"" colspan=""2"" class=""style6""><Label id=""lblRegion"">Select your Region &nbsp;</LABEL></td>")
+			                                document.write("<td  style=""width:60%""><Select name=""ddRegion"" class=""DynamicListBox"" onChange=""GetDetailsFromRegion"" tabindex=1 style=""width:80%""></Select></td>")
+			                                document.write("</tr>")
+			                                document.write("<tr>")
+			                            	document.write("<td>&nbsp;</td>")
+			                            	document.write("<td></td>")
+			                            	document.write("<td></td>")
+			                            	document.write("</tr>")
+	                            		End If
+                                                                
+	                            		If Not SkipLocationName="YES" Then
+			                                document.write("<tr>")
+			                            	document.write("<td  style=""width:22%"" colspan=""2"" class=""style6""><Label id=""lblLocationName"">Select your Location &nbsp;</LABEL></td>")
+			                                    document.write("<td style=""width:60%""><Select name=""ddLocationName"" class=""DynamicListBox"" onChange=""GetDetailsFromLocation"" tabindex=2 style=""width:80%""></Select></td>")
+			                                document.write("</tr>")
+			                                document.write("<tr>")
+			                            	document.write("<td>&nbsp;</td>")
+			                            	document.write("<td></td>")
+			                            	document.write("<td></td>")
+			                            	document.write("</tr>")
+	                            		End If
+						
+	                            		If Not SkipProfileName="YES" Then
+			                                document.write("<tr>")
+			                            	document.write("<td colspan=""2"" class=""style6""><Label id=""lblProfileName"">Select your Profile &nbsp;</LABEL></td>")
+			                                document.write("<td><Select name=""ddProfileName"" class=""DynamicListBox"" onChange=""GetDetailsFromProfile"" tabindex=3 style=""width:400""></Select></td>")
+			                                document.write("</tr>")
+			                                document.write("<tr>")
+			                            	document.write("<td>&nbsp;</td>")
+			                            	document.write("<td></td>")
+			                            	document.write("<td></td>")	
+			                            	document.write("</tr>")
+	                            		End If
+	                            
+	                            		If SkipRegionalSettings="YES" Then
+			                            		'do nothing		
+			                            Else
+	                            		 	document.write("<tr>")
+											document.write("<td colspan=""3"" class=""style6""><Label id=""lblRegionalSettings"">Regional and Language Settings</Label></td>")
+                                			document.write("</tr>")
+                                			document.write("<tr>")
+											document.write("<td colspan=""3"" style=""height:5"" class=""style2""></td>")
+                                			document.write("</tr>")
+                                			
+											If Not SkipUILanguage="YES" Then
+	                                			document.write("<tr>")
+				                                	document.write("<td width=""2%"">&nbsp;</td>")
+				                                    document.write("<td width=""20%""><Label id=""lblDefMUI"" style=""visibility:Visible"">Display language&nbsp</LABEL></td>")
+					                            	document.write("<td width=""60%""><div id=""divDefMUI"" style=""VISIBILITY:Visible"" ><Select  name=""DefMUI""  onChange=""SetUserLocaleToUILanguage"" disabled=""false"" tabindex=4 style=""width:80%""></div></td>")
+					                            document.write("</tr>")
+					                        End If
+					                        
+                                			If Not SkipUserLocale="YES" Then
+	                                			document.write("<tr>")
+				                                	document.write("<td width=""2%"">&nbsp;</td>")
+				                                    document.write("<td style=""width:20%""><Label id=""lblUserLocale"">Time and currency format&nbsp;</Label></td>")
+					                           If sMultiInputLocalePerLocation="YES" Then
+					                            		document.write("<td style=""width:60%""><Select name=""ddUserLocale"" class=""DynamicListBox"" tabindex=5 style=""width:80%""></Select></td>")
+					                            Else
+					                            		document.write("<td style=""width:60%""><Select name=""ddUserLocale"" class=""DynamicListBox"" onChange=""GetDefaultKeyb_Country"" tabindex=5 style=""width:80%""></Select></td>")
+					                            End If
+					                        	document.write("</tr>")
+					                        End If
+					                        
+					                        If Not SkipSystemLocale="YES" Then
+				                            	document.write("<tr>")
+				                            		document.write("<td width=""2%"">&nbsp;</td>")
+				                                    document.write("<td width=""20%""><Label id=""lblSystemLocale"">System Locale&nbsp;</Label></td>")
+				                                    document.write("<td width=""60%""><Select name=""ddSystemLocale"" class=""DynamicListBox"" tabindex=6 style=""width:80%""></Select></td>")
+				                                document.write("</tr>")
+	                                		End If
+	                                		
+	                                		
+											If Not SkipInputLocale="YES" Then
+										       	document.write("<tr>")
+			                            		document.write("<td>&nbsp;</td>")
+			                            		
+			                            		If sMultiInputLocalePerLocation="YES" Then
+				                            			document.write("<td width=""22%""><Label id=""lblInputLocale"">Default Input Locale&nbsp</Label></td>")
+				                                    	document.write("<td width=""60%""><Select id=""ddInputLocale"" class=""DynamicListBox"" tabindex=7 style=""width:80%""></Select></td>")
+			                            			
+			                            		Else
+			                            		
+				                                    document.write("<td width=""22%""><Label id=""lblKeyboardLayout"">keyboard layout&nbsp</Label></td>")
+				                                    document.write("<td width=""60%""><Select id=""ddAvailableKeybLayouts"" class=""DynamicListBox"" tabindex=7 style=""width:80%"">" & _
+									                                    "<Option value="" ""selected=""selected""></Option>" & _
+																		"<Option value=""0000041c"">Albanian</Option>" & _
+																		"<Option value=""00000401"">Arabic (101)</Option>" & _
+																		"<Option value=""00010401"">Arabic (102)</Option>" & _
+																		"<Option value=""00020401"">Arabic (102) AZERTY</Option>" & _
+																		"<Option value=""0000042b"">Armenian Eastern</Option>" & _
+																		"<Option value=""0001042b"">Armenian Western</Option>" & _
+																		"<Option value=""0000044d"">ASSAMESE - INSCRIPT</Option>" & _
+																		"<Option value=""0000082c"">Azeri Cyrillic</Option>" & _
+																		"<Option value=""0000042c"">Azeri Latin</Option>" & _
+																		"<Option value=""0000046d"">Bashkir</Option>" & _
+																		"<Option value=""00000423"">Belarusian</Option>" & _
+																		"<Option value=""0001080c"">Belgian (Comma)</Option>" & _
+																		"<Option value=""00000813"">Belgian (Period)</Option>" & _
+																		"<Option value=""0000080c"">Belgian French</Option>" & _
+																		"<Option value=""00000445"">Bengali</Option>" & _
+																		"<Option value=""00020445"">Bengali - INSCRIPT</Option>" & _
+																		"<Option value=""00010445"">Bengali - INSCRIPT (Legacy)</Option>" & _
+																		"<Option value=""0000201a"">Bosnian (Cyrillic)</Option>" & _
+																		"<Option value=""00030402"">Bulgarian</Option>" & _
+																		"<Option value=""00010402"">Bulgarian (Latin)</Option>" & _
+																		"<Option value=""00020402"">Bulgarian (phonetic layout)</Option>" & _
+																		"<Option value=""00040402"">Bulgarian (phonetic traditional)</Option>" & _
+																		"<Option value=""00001009"">Canadian French</Option>" & _
+																		"<Option value=""00000c0c"">Canadian French (Legacy)</Option>" & _
+																		"<Option value=""00011009"">Canadian Multilingual Standard</Option>" & _
+																		"<Option value=""00000804"">Chinese (Simplified) - US Keyboard</Option>" & _
+																		"<Option value=""00001004"">Chinese (Simplified, Singapore) - US keyboard</Option>" & _
+																		"<Option value=""00001404"">Chinese (Traditional Macao S.A.R.) US Keyboard</Option>" & _
+																		"<Option value=""00000404"">Chinese (Traditional) - US Keyboard</Option>" & _
+																		"<Option value=""0000041a"">Croatian</Option>" & _
+																		"<Option value=""00000405"">Czech</Option>" & _
+																		"<Option value=""00010405"">Czech (QWERTY)</Option>" & _
+																		"<Option value=""00020405"">Czech Programmers</Option>" & _
+																		"<Option value=""00000406"">Danish</Option>" & _
+																		"<Option value=""00000439"">Devanagari-INSCRIPT</Option>" & _
+																		"<Option value=""00000465"">Divehi Phonetic</Option>" & _
+																		"<Option value=""00010465"">Divehi Typewriter</Option>" & _
+																		"<Option value=""00000413"">Dutch</Option>" & _
+																		"<Option value=""00000425"">Estonian</Option>" & _
+																		"<Option value=""00000438"">Faeroese</Option>" & _
+																		"<Option value=""0000040b"">Finnish</Option>" & _
+																		"<Option value=""0001083b"">Finnish with Sami</Option>" & _
+																		"<Option value=""0000040c"">French</Option>" & _
+																		"<Option value=""00011809"">Gaelic</Option>" & _
+																		"<Option value=""00000437"">Georgian</Option>" & _
+																		"<Option value=""00020437"">Georgian (Ergonomic)</Option>" & _
+																		"<Option value=""00010437"">Georgian (QWERTY)</Option>" & _
+																		"<Option value=""00000407"">German</Option>" & _
+																		"<Option value=""00010407"">German (IBM)</Option>" & _
+																		"<Option value=""00000408"">Greek</Option>" & _
+																		"<Option value=""00010408"">Greek (220)</Option>" & _
+																		"<Option value=""00030408"">Greek (220) Latin</Option>" & _
+																		"<Option value=""00020408"">Greek (319)</Option>" & _
+																		"<Option value=""00040408"">Greek (319) Latin</Option>" & _
+																		"<Option value=""00050409"">Greek Latin</Option>" & _
+																		"<Option value=""00060408"">Greek Polytonic</Option>" & _
+																		"<Option value=""0000046f"">Greenlandic</Option>" & _
+																		"<Option value=""00000447"">Gujarati</Option>" & _
+																		"<Option value=""00000468"">Hausa</Option>" & _
+																		"<Option value=""0000040d"">Hebrew</Option>" & _
+																		"<Option value=""00010439"">Hindi Traditional</Option>" & _
+																		"<Option value=""0000040e"">Hungarian</Option>" & _
+																		"<Option value=""0001040e"">Hungarian 101-key</Option>" & _
+																		"<Option value=""0000040f"">Icelandic</Option>" & _
+																		"<Option value=""00000470"">Igbo</Option>" & _
+																		"<Option value=""0000085d"">Inuktitut - Latin</Option>" & _
+																		"<Option value=""0001045d"">Inuktitut - Naqittaut</Option>" & _
+																		"<Option value=""00001809"">Irish</Option>" & _
+																		"<Option value=""00000410"">Italian</Option>" & _
+																		"<Option value=""00010410"">Italian (142)</Option>" & _
+																		"<Option value=""00000411"">Japanese</Option>" & _
+																		"<Option value=""e0010411"">Japanese - Microsoft IME</Option>" & _
+																		"<Option value=""0000044b"">Kannada</Option>" & _
+																		"<Option value=""0000043f"">Kazakh</Option>" & _
+																		"<Option value=""00000453"">Khmer</Option>" & _
+																		"<Option value=""00000412"">Korean</Option>" & _
+																		"<Option value=""E0010412"">Korean - Microsoft IME</Option>" & _
+																		"<Option value=""00000440"">Kyrgyz Cyrillic</Option>" & _
+																		"<Option value=""00000454"">Lao</Option>" & _
+																		"<Option value=""0000080a"">Latin American</Option>" & _
+																		"<Option value=""00000426"">Latvian</Option>" & _
+																		"<Option value=""00010426"">Latvian (QWERTY)</Option>" & _
+																		"<Option value=""00010427"">Lithuanian</Option>" & _
+																		"<Option value=""00000427"">Lithuanian IBM</Option>" & _
+																		"<Option value=""00020427"">Lithuanian New</Option>" & _
+																		"<Option value=""0000046e"">Luxembourgish</Option>" & _
+																		"<Option value=""0000042f"">Macedonian (FYROM)</Option>" & _
+																		"<Option value=""0001042f"">Macedonian (FYROM) - Standard</Option>" & _
+																		"<Option value=""0000044c"">Malayalam</Option>" & _
+																		"<Option value=""0000043a"">Maltese 47-Key</Option>" & _
+																		"<Option value=""0001043a"">Maltese 48-key</Option>" & _
+																		"<Option value=""00000481"">Maori</Option>" & _
+																		"<Option value=""0000044e"">Marathi</Option>" & _
+																		"<Option value=""00000850"">Mongolian (Mongolian Script)</Option>" & _
+																		"<Option value=""00000450"">Mongolian Cyrillic</Option>" & _
+																		"<Option value=""00000461"">Nepali</Option>" & _
+																		"<Option value=""00000414"">Norwegian</Option>" & _
+																		"<Option value=""0000043b"">Norwegian with Sami</Option>" & _
+																		"<Option value=""00000448"">Oriya</Option>" & _
+																		"<Option value=""00000463"">Pashto (Afghanistan)</Option>" & _
+																		"<Option value=""00000429"">Persian</Option>" & _
+																		"<Option value=""00010415"">Polish (214)</Option>" & _
+																		"<Option value=""00000415"">Polish (Programmers)</Option>" & _
+																		"<Option value=""00000816"">Portuguese</Option>" & _
+																		"<Option value=""00000416"">Portuguese (Brazilian ABNT)</Option>" & _
+																		"<Option value=""00010416"">Portuguese (Brazilian ABNT2)</Option>" & _
+																		"<Option value=""00000446"">Punjabi</Option>" & _
+																		"<Option value=""00000418"">Romanian (Legacy)</Option>" & _
+																		"<Option value=""00020418"">Romanian (Programmers)</Option>" & _
+																		"<Option value=""00010418"">Romanian (Standard)</Option>" & _
+																		"<Option value=""00000419"">Russian</Option>" & _
+																		"<Option value=""00010419"">Russian (Typewriter)</Option>" & _
+																		"<Option value=""0002083b"">Sami Extended Finland-Sweden</Option>" & _
+																		"<Option value=""0001043b"">Sami Extended Norway</Option>" & _
+																		"<Option value=""00000c1a"">Serbian (Cyrillic)</Option>" & _
+																		"<Option value=""0000081a"">Serbian (Latin)</Option>" & _
+																		"<Option value=""0000046c"">Sesotho sa Leboa</Option>" & _
+																		"<Option value=""00000432"">Setswana</Option>" & _
+																		"<Option value=""0000045b"">Sinhala</Option>" & _
+																		"<Option value=""0001045b"">Sinhala - wij 9</Option>" & _
+																		"<Option value=""0000041b"">Slovak</Option>" & _
+																		"<Option value=""0001041b"">Slovak (QWERTY)</Option>" & _
+																		"<Option value=""00000424"">Slovenian</Option>" & _
+																		"<Option value=""0001042e"">Sorbian Extended</Option>" & _
+																		"<Option value=""0002042e"">Sorbian Standard</Option>" & _
+																		"<Option value=""0000042e"">Sorbian Standard (Legacy)</Option>" & _
+																		"<Option value=""0000040a"">Spanish</Option>" & _
+																		"<Option value=""0001040a"">Spanish Variation</Option>" & _
+																		"<Option value=""0000041d"">Swedish</Option>" & _
+																		"<Option value=""0000083b"">Swedish with Sami</Option>" & _
+																		"<Option value=""0000100c"">Swiss French</Option>" & _
+																		"<Option value=""00000807"">Swiss German</Option>" & _
+																		"<Option value=""0000045a"">Syriac</Option>" & _
+																		"<Option value=""0001045a"">Syriac Phonetic</Option>" & _
+																		"<Option value=""00000428"">Tajik</Option>" & _
+																		"<Option value=""00000449"">Tamil</Option>" & _
+																		"<Option value=""00000444"">Tatar</Option>" & _
+																		"<Option value=""0000044a"">Telugu</Option>" & _
+																		"<Option value=""0000041e"">Thai Kedmanee</Option>" & _
+																		"<Option value=""0002041e"">Thai Kedmanee (non-ShiftLock)</Option>" & _
+																		"<Option value=""0001041e"">Thai Pattachote</Option>" & _
+																		"<Option value=""0003041e"">Thai Pattachote (non-ShiftLock)</Option>" & _
+																		"<Option value=""00000451"">Tibetan (PRC)</Option>" & _
+																		"<Option value=""0001041f"">Turkish F</Option>" & _
+																		"<Option value=""0000041f"">Turkish Q</Option>" & _
+																		"<Option value=""00000442"">Turkmen</Option>" & _
+																		"<Option value=""00000422"">Ukrainian</Option>" & _
+																		"<Option value=""00020422"">Ukrainian (Enhanced)</Option>" & _
+																		"<Option value=""00000809"">United Kingdom</Option>" & _
+																		"<Option value=""00000452"">United Kingdom Extended</Option>" & _
+																		"<Option value=""00010409"">United States - Dvorak</Option>" & _
+																		"<Option value=""00000409"">United States - English</Option>" & _
+																		"<Option value=""00020409"">United States - International</Option>" & _
+																		"<Option value=""00030409"">United States-Devorak for left hand</Option>" & _
+																		"<Option value=""00040409"">United States-Dvorak for right hand</Option>" & _
+																		"<Option value=""00050409"">US English Table for IBM Arabic 238_L</Option>" & _
+																		"<Option value=""00000420"">Urdu</Option>" & _
+																		"<Option value=""00010480"">Uyghur</Option>" & _
+																		"<Option value=""00000480"">Uyghur (Legacy)</Option>" & _
+																		"<Option value=""00000843"">Uzbek Cyrillic</Option>" & _
+																		"<Option value=""0000042a"">Vietnamese</Option>" & _
+																		"<Option value=""00000488"">Wolof</Option>" & _
+																		"<Option value=""00000485"">Yakut</Option>" & _
+																		"<Option value=""0000046a"">Yoruba</Option>" & _
+																		"</select></td>")
+													End If
+				                                	document.write("</tr>")
+				                                
+	                                		End If
+	                                		
+	                                		If Not SkipCountry="YES" Then
+				                            	document.write("<tr>")
+				                            		document.write("<td style=""width:2%"">&nbsp;</td>")
+				                                    document.write("<td style=""width:20%""><Label id=""lblCountry"">Country&nbsp</Label></td>")
+				                                    document.write("<td style=""width:60%""><Select name=""ddCountry"" tabindex=8  class=""DynamicListBox"" style=""width:80%"">" & _
+									                      	"<Option value="" ""selected=""selected""></Option>" & _
+															"<Option value=""3"">Afghanistan</Option>" & _
+															"<Option value=""6"">Albania</Option>" & _
+															"<Option value=""4"">Algeria</Option>" & _
+															"<Option value=""10"">American Samoa</Option>" & _
+															"<Option value=""8"">Andorra</Option>" & _
+															"<Option value=""9"">Angola</Option>" & _
+															"<Option value=""300"">Anguilla</Option>" & _
+															"<Option value=""301"">Antarctica</Option>" & _
+															"<Option value=""2"">Antigua and Barbuda</Option>" & _
+															"<Option value=""11"">Argentina</Option>" & _
+															"<Option value=""7"">Armenia</Option>" & _
+															"<Option value=""302"">Aruba</Option>" & _
+															"<Option value=""303"">Ascension Island</Option>" & _
+															"<Option value=""304"">Ashmore and Cartier Islands</Option>" & _
+															"<Option value=""12"">Australia</Option>" & _
+															"<Option value=""14"">Austria</Option>" & _
+															"<Option value=""5"">Azerbaijan</Option>" & _
+															"<Option value=""22"">Bahamas, The</Option>" & _
+															"<Option value=""17"">Bahrain</Option>" & _
+															"<Option value=""305"">Baker Island</Option>" & _
+															"<Option value=""23"">Bangladesh</Option>" & _
+															"<Option value=""18"">Barbados</Option>" & _
+															"<Option value=""29"">Belarus</Option>" & _
+															"<Option value=""21"">Belgium</Option>" & _
+															"<Option value=""24"">Belize</Option>" & _
+															"<Option value=""28"">Benin</Option>" & _
+															"<Option value=""20"">Bermuda</Option>" & _
+															"<Option value=""34"">Bhutan</Option>" & _
+															"<Option value=""26"">Bolivia</Option>" & _
+															"<Option value=""25"">Bosnia and Herzegovina</Option>" & _
+															"<Option value=""19"">Botswana</Option>" & _
+															"<Option value=""306"">Bouvet Island</Option>" & _
+															"<Option value=""32"">Brazil</Option>" & _
+															"<Option value=""114"">British Indian Ocean Territory</Option>" & _
+															"<Option value=""37"">Brunei</Option>" & _
+															"<Option value=""35"">Bulgaria</Option>" & _
+															"<Option value=""245"">Burkina Faso</Option>" & _
+															"<Option value=""38"">Burundi</Option>" & _
+															"<Option value=""40"">Cambodia</Option>" & _
+															"<Option value=""49"">Cameroon</Option>" & _
+															"<Option value=""39"">Canada</Option>" & _
+															"<Option value=""57"">Cape Verde</Option>" & _
+															"<Option value=""307"">Cayman Islands</Option>" & _
+															"<Option value=""55"">Central African Republic</Option>" & _
+															"<Option value=""41"">Chad</Option>" & _
+															"<Option value=""308"">Channel Islands</Option>" & _
+															"<Option value=""46"">Chile</Option>" & _
+															"<Option value=""45"">China</Option>" & _
+															"<Option value=""309"">Christmas Island</Option>" & _
+															"<Option value=""310"">Clipperton Island</Option>" & _
+															"<Option value=""311"">Cocos (Keeling) Islands</Option>" & _
+															"<Option value=""51"">Colombia</Option>" & _
+															"<Option value=""50"">Comoros</Option>" & _
+															"<Option value=""43"">Congo</Option>" & _
+															"<Option value=""44"">Congo (DRC)</Option>" & _
+															"<Option value=""312"">Cook Islands</Option>" & _
+															"<Option value=""313"">Coral Sea Islands</Option>" & _
+															"<Option value=""54"">Costa Rica</Option>" & _
+															"<Option value=""119"">Côte d'Ivoire</Option>" & _
+															"<Option value=""108"">Croatia</Option>" & _
+															"<Option value=""56"">Cuba</Option>" & _
+															"<Option value=""59"">Cyprus</Option>" & _
+															"<Option value=""75"">Czech Republic</Option>" & _
+															"<Option value=""61"">Denmark</Option>" & _
+															"<Option value=""314"">Diego Garcia</Option>" & _
+															"<Option value=""62"">Djibouti</Option>" & _
+															"<Option value=""63"">Dominica</Option>" & _
+															"<Option value=""65"">Dominican Republic</Option>" & _
+															"<Option value=""66"">Ecuador</Option>" & _
+															"<Option value=""67"">Egypt</Option>" & _
+															"<Option value=""72"">El Salvador</Option>" & _
+															"<Option value=""69"">Equatorial Guinea</Option>" & _
+															"<Option value=""71"">Eritrea</Option>" & _
+															"<Option value=""70"">Estonia</Option>" & _
+															"<Option value=""73"">Ethiopia</Option>" & _
+															"<Option value=""315"">Falkland Islands (Islas Malvinas)</Option>" & _
+															"<Option value=""81"">Faroe Islands</Option>" & _
+															"<Option value=""78"">Fiji Islands</Option>" & _
+															"<Option value=""77"">Finland</Option>" & _
+															"<Option value=""84"">France</Option>" & _
+															"<Option value=""317"">French Guiana</Option>" & _
+															"<Option value=""318"">French Polynesia</Option>" & _
+															"<Option value=""319"">French Southern and Antarctic Lands</Option>" & _
+															"<Option value=""87"">Gabon</Option>" & _
+															"<Option value=""86"">Gambia, The</Option>" & _
+															"<Option value=""88"">Georgia</Option>" & _
+															"<Option value=""94"">Germany</Option>" & _
+															"<Option value=""89"">Ghana</Option>" & _
+															"<Option value=""90"">Gibraltar</Option>" & _
+															"<Option value=""98"">Greece</Option>" & _
+															"<Option value=""93"">Greenland</Option>" & _
+															"<Option value=""91"">Grenada</Option>" & _
+															"<Option value=""321"">Guadeloupe</Option>" & _
+															"<Option value=""322"">Guam</Option>" & _
+															"<Option value=""323"">Guantanamo Bay</Option>" & _
+															"<Option value=""99"">Guatemala</Option>" & _
+															"<Option value=""324"">Guernsey</Option>" & _
+															"<Option value=""100"">Guinea</Option>" & _
+															"<Option value=""196"">Guinea-Bissau</Option>" & _
+															"<Option value=""101"">Guyana</Option>" & _
+															"<Option value=""103"">Haiti</Option>" & _
+															"<Option value=""325"">Heard Island and McDonald Islands</Option>" & _
+															"<Option value=""106"">Honduras</Option>" & _
+															"<Option value=""104"">Hong Kong SAR</Option>" & _
+															"<Option value=""326"">Howland Island</Option>" & _
+															"<Option value=""109"">Hungary</Option>" & _
+															"<Option value=""110"">Iceland</Option>" & _
+															"<Option value=""113"">India</Option>" & _
+															"<Option value=""111"">Indonesia</Option>" & _
+															"<Option value=""116"">Iran</Option>" & _
+															"<Option value=""121"">Iraq</Option>" & _
+															"<Option value=""68"">Ireland</Option>" & _
+															"<Option value=""15126"">Isle of Man</Option>" & _
+															"<Option value=""117"">Israel</Option>" & _
+															"<Option value=""118"">Italy</Option>" & _
+															"<Option value=""124"">Jamaica</Option>" & _
+															"<Option value=""125"">Jan Mayen</Option>" & _
+															"<Option value=""122"">Japan</Option>" & _
+															"<Option value=""327"">Jarvis Island</Option>" & _
+															"<Option value=""328"">Jersey</Option>" & _
+															"<Option value=""127"">Johnston Atoll</Option>" & _
+															"<Option value=""126"">Jordan</Option>" & _
+															"<Option value=""137"">Kazakhstan</Option>" & _
+															"<Option value=""129"">Kenya</Option>" & _
+															"<Option value=""329"">Kingman Reef</Option>" & _
+															"<Option value=""133"">Kiribati</Option>" & _
+															"<Option value=""134"">Korea</Option>" & _
+															"<Option value=""136"">Kuwait</Option>" & _
+															"<Option value=""130"">Kyrgyzstan</Option>" & _
+															"<Option value=""138"">Laos</Option>" & _
+															"<Option value=""140"">Latvia</Option>" & _
+															"<Option value=""139"">Lebanon</Option>" & _
+															"<Option value=""146"">Lesotho</Option>" & _
+															"<Option value=""142"">Liberia</Option>" & _
+															"<Option value=""148"">Libya</Option>" & _
+															"<Option value=""145"">Liechtenstein</Option>" & _
+															"<Option value=""141"">Lithuania</Option>" & _
+															"<Option value=""147"">Luxembourg</Option>" & _
+															"<Option value=""151"">Macao SAR</Option>" & _
+															"<Option value=""19618"">Macedonia, FYROM</Option>" & _
+															"<Option value=""149"">Madagascar</Option>" & _
+															"<Option value=""156"">Malawi</Option>" & _
+															"<Option value=""167"">Malaysia</Option>" & _
+															"<Option value=""165"">Maldives</Option>" & _
+															"<Option value=""157"">Mali</Option>" & _
+															"<Option value=""163"">Malta</Option>" & _
+															"<Option value=""199"">Marshall Islands</Option>" & _
+															"<Option value=""330"">Martinique</Option>" & _
+															"<Option value=""162"">Mauritania</Option>" & _
+															"<Option value=""160"">Mauritius</Option>" & _
+															"<Option value=""331"">Mayotte</Option>" & _
+															"<Option value=""166"">Mexico</Option>" & _
+															"<Option value=""80"">Micronesia</Option>" & _
+															"<Option value=""21242"">Midway Islands</Option>" & _
+															"<Option value=""152"">Moldova</Option>" & _
+															"<Option value=""158"">Monaco</Option>" & _
+															"<Option value=""154"">Mongolia</Option>" & _
+															"<Option value=""332"">Montserrat</Option>" & _
+															"<Option value=""159"">Morocco</Option>" & _
+															"<Option value=""168"">Mozambique</Option>" & _
+															"<Option value=""27"">Myanmar</Option>" & _
+															"<Option value=""254"">Namibia</Option>" & _
+															"<Option value=""180"">Nauru</Option>" & _
+															"<Option value=""178"">Nepal</Option>" & _
+															"<Option value=""176"">Netherlands</Option>" & _
+															"<Option value=""333"">Netherlands Antilles</Option>" & _
+															"<Option value=""334"">New Caledonia</Option>" & _
+															"<Option value=""183"">New Zealand</Option>" & _
+															"<Option value=""182"">Nicaragua</Option>" & _
+															"<Option value=""173"">Niger</Option>" & _
+															"<Option value=""175"">Nigeria</Option>" & _
+															"<Option value=""335"">Niue</Option>" & _
+															"<Option value=""336"">Norfolk Island</Option>" & _
+															"<Option value=""131"">North Korea</Option>" & _
+															"<Option value=""337"">Northern Mariana Islands</Option>" & _
+															"<Option value=""177"">Norway</Option>" & _
+															"<Option value=""164"">Oman</Option>" & _
+															"<Option value=""190"">Pakistan</Option>" & _
+															"<Option value=""195"">Palau</Option>" & _
+															"<Option value=""184"">Palestinian Authority</Option>" & _
+															"<Option value=""338"">Palmyra Atoll</Option>" & _
+															"<Option value=""192"">Panama</Option>" & _
+															"<Option value=""194"">Papua New Guinea</Option>" & _
+															"<Option value=""185"">Paraguay</Option>" & _
+															"<Option value=""187"">Peru</Option>" & _
+															"<Option value=""201"">Philippines</Option>" & _
+															"<Option value=""339"">Pitcairn Islands</Option>" & _
+															"<Option value=""191"">Poland</Option>" & _
+															"<Option value=""193"">Portugal</Option>" & _
+															"<Option value=""202"">Puerto Rico</Option>" & _
+															"<Option value=""197"">Qatar</Option>" & _
+															"<Option value=""198"">Reunion</Option>" & _
+															"<Option value=""200"">Romania</Option>" & _
+															"<Option value=""340"">Rota Island</Option>" & _
+															"<Option value=""203"">Russia</Option>" & _
+															"<Option value=""204"">Rwanda</Option>" & _
+															"<Option value=""341"">Saipan</Option>" & _
+															"<Option value=""259"">Samoa</Option>" & _
+															"<Option value=""214"">San Marino</Option>" & _
+															"<Option value=""233"">São Tomé and Príncipe</Option>" & _
+															"<Option value=""205"">Saudi Arabia</Option>" & _
+															"<Option value=""210"">Senegal</Option>" & _
+															"<Option value=""269"">Serbia</Option>" & _
+															"<Option value=""208"">Seychelles</Option>" & _
+															"<Option value=""213"">Sierra Leone</Option>" & _
+															"<Option value=""215"">Singapore</Option>" & _
+															"<Option value=""143"">Slovakia</Option>" & _
+															"<Option value=""212"">Slovenia</Option>" & _
+															"<Option value=""30"">Solomon Islands</Option>" & _
+															"<Option value=""216"">Somalia</Option>" & _
+															"<Option value=""209"">South Africa</Option>" & _
+															"<Option value=""342"">South Georgia and the South Sandwich Islands</Option>" & _
+															"<Option value=""217"">Spain</Option>" & _
+															"<Option value=""42"">Sri Lanka</Option>" & _
+															"<Option value=""343"">St. Helena</Option>" & _
+															"<Option value=""207"">St. Kitts and Nevis</Option>" & _
+															"<Option value=""218"">St. Lucia</Option>" & _
+															"<Option value=""206"">St. Pierre and Miquelon</Option>" & _
+															"<Option value=""248"">St. Vincent and the Grenadines</Option>" & _
+															"<Option value=""219"">Sudan</Option>" & _
+															"<Option value=""181"">Suriname</Option>" & _
+															"<Option value=""220"">Svalbard</Option>" & _
+															"<Option value=""260"">Swaziland</Option>" & _
+															"<Option value=""221"">Sweden</Option>" & _
+															"<Option value=""223"">Switzerland</Option>" & _
+															"<Option value=""222"">Syria</Option>" & _
+															"<Option value=""237"">Taiwan</Option>" & _
+															"<Option value=""228"">Tajikistan</Option>" & _
+															"<Option value=""239"">Tanzania</Option>" & _
+															"<Option value=""227"">Thailand</Option>" & _
+															"<Option value=""7299303"">Timor-Leste</Option>" & _
+															"<Option value=""346"">Tinian Island</Option>" & _
+															"<Option value=""232"">Togo</Option>" & _
+															"<Option value=""347"">Tokelau</Option>" & _
+															"<Option value=""231"">Tonga</Option>" & _
+															"<Option value=""225"">Trinidad and Tobago</Option>" & _
+															"<Option value=""348"">Tristan da Cunha</Option>" & _
+															"<Option value=""234"">Tunisia</Option>" & _
+															"<Option value=""235"">Turkey</Option>" & _
+															"<Option value=""238"">Turkmenistan</Option>" & _
+															"<Option value=""349"">Turks and Caicos Islands</Option>" & _
+															"<Option value=""236"">Tuvalu</Option>" & _
+															"<Option value=""240"">Uganda</Option>" & _
+															"<Option value=""241"">Ukraine</Option>" & _
+															"<Option value=""224"">United Arab Emirates</Option>" & _
+															"<Option value=""242"">United Kingdom</Option>" & _
+															"<Option value=""244"">United States</Option>" & _
+															"<Option value=""246"">Uruguay</Option>" & _
+															"<Option value=""247"">Uzbekistan</Option>" & _
+															"<Option value=""174"">Vanuatu</Option>" & _
+															"<Option value=""253"">Vatican City</Option>" & _
+															"<Option value=""249"">Venezuela</Option>" & _
+															"<Option value=""251"">Vietnam</Option>" & _
+															"<Option value=""252"">Virgin Islands</Option>" & _
+															"<Option value=""351"">Virgin Islands, British</Option>" & _
+															"<Option value=""258"">Wake Island</Option>" & _
+															"<Option value=""352"">Wallis and Futuna</Option>" & _
+															"<Option value=""261"">Yemen</Option>" & _
+															"<Option value=""263"">Zambia</Option>" & _
+															"<Option value=""264"">Zimbabwe</Option>" & _
+														"</select></td>")     
+				                                    
+				                                document.write("</tr>")
+	                                		End If
+                             
+                             				If Not SkipTimeZone="YES" Then
+				                            	document.write("<tr>")
+				                            		document.write("<td style=""width:2%"">&nbsp;</td>")
+				                                    document.write("<td style=""width:20%""><Label id=""lblTimezone"">Time Zone&nbsp</Label></td>")
+				                                    document.write("<td style=""width:60%""><Select name=""ddTimezones"" tabindex=9 class=""DynamicListBox"" style=""width:80%"">" & _
+									                      	"<Option value=""selected=""selected""></Option>" & _
+															"<option value=""GMT Standard Time"">(UTC) Dublin, Edinburgh, Lisbon, London</option>" & _
+															"<option value=""Greenwich Standard Time"">(UTC) Monrovia, Reykjavik</option>" & _
+															"<option value=""Morocco Standard Time"">(UTC) Casablanca</option>" & _
+															"<option value=""UTC"">(UTC) Coordinated Universal Time</option>" & _
+															"<option value=""Central Europe Standard Time"">(UTC+01:00) Belgrade, Bratislava, Budapest, Ljubljana, Prague</option>" & _
+															"<option value=""Central European Standard Time"">(UTC+01:00) Sarajevo, Skopje, Warsaw, Zagreb</option>" & _
+															"<option value=""Romance Standard Time"">(UTC+01:00) Brussels, Copenhagen, Madrid, Paris</option>" & _
+															"<option value=""W. Central Africa Standard Time"">(UTC+01:00) West Central Africa</option>" & _
+															"<option value=""W. Europe Standard Time"">(UTC+01:00) Amsterdam, Berlin, Bern, Rome, Stockholm, Vienna</option>" & _
+															"<option value=""Israel Standard Time"">(UTC+02:00) Jerusalem</option>" & _
+															"<option value=""Jordan Standard Time"">(UTC+02:00) Amman</option>" & _
+															"<option value=""Middle East Standard Time"">(UTC+02:00) Beirut</option>" & _
+															"<option value=""Syria Standard Time"">(UTC+02:00) Damascus</option>" & _
+															"<option value=""Turkey Standard Time"">(UTC+02:00) Istanbul</option>" & _
+															"<option value=""Namibia Standard Time"">(UTC+02:00) Windhoek</option>" & _
+															"<option value=""E. Europe Standard Time"">(UTC+02:00) Nicosia</option>" & _
+															"<option value=""Egypt Standard Time"">(UTC+02:00) Cairo</option>" & _
+															"<option value=""FLE Standard Time"">(UTC+02:00) Helsinki, Kyiv, Riga, Sofia, Tallinn, Vilnius</option>" & _
+															"<option value=""GTB Standard Time"">(UTC+02:00) Athens, Bucharest</option>" & _
+															"<option value=""South Africa Standard Time"">(UTC+02:00) Harare, Pretoria</option>" & _
+															"<option value=""Arab Standard Time"">(UTC+03:00) Kuwait, Riyadh</option>" & _
+															"<option value=""Arabic Standard Time"">(UTC+03:00) Baghdad</option>" & _
+															"<option value=""Kaliningrad Standard Time"">(UTC+03:00) Kaliningrad, Minsk</option>" & _
+															"<option value=""E. Africa Standard Time"">(UTC+03:00) Nairobi</option>" & _
+															"<option value=""Iran Standard Time"">(UTC+03:30) Tehran</option>" & _
+															"<option value=""Arabian Standard Time"">(UTC+04:00) Abu Dhabi, Muscat</option>" & _
+															"<option value=""Azerbaijan Standard Time"">(UTC+04:00) Baku</option>" & _
+															"<option value=""Caucasus Standard Time"">(UTC+04:00) Yerevan</option>" & _
+															"<option value=""Georgian Standard Time"">(UTC+04:00) Tbilisi</option>" & _
+															"<option value=""Mauritius Standard Time"">(UTC+04:00) Port Louis</option>" & _
+															"<option value=""Russian Standard Time"">(UTC+04:00) Moscow, St. Petersburg, Volgograd</option>" & _
+															"<option value=""Afghanistan Standard Time"">(UTC+04:30) Kabul</option>" & _
+															"<option value=""Ekaterinburg Standard Time"">(UTC+05:00) Ekaterinburg</option>" & _
+															"<option value=""Pakistan Standard Time"">(UTC+05:00) Islamabad, Karachi</option>" & _
+															"<option value=""West Asia Standard Time"">(UTC+05:00) Tashkent</option>" & _
+															"<option value=""India Standard Time"">(UTC+05:30) Chennai, Kolkata, Mumbai, New Delhi</option>" & _
+															"<option value=""Sri Lanka Standard Time"">(UTC+05:30) Sri Jayawardenepura</option>" & _
+															"<option value=""Nepal Standard Time"">(UTC+05:45) Kathmandu</option>" & _
+															"<option value=""Central Asia Standard Time"">(UTC+06:00) Astana</option>" & _
+															"<option value=""Bangladesh Standard Time"">(UTC+06:00) Dhaka</option>" & _
+															"<option value=""N. Central Asia Standard Time"">(UTC+06:00) Novosibirsk</option>" & _
+															"<option value=""Myanmar Standard Time"">(UTC+06:30) Yangon (Rangoon)</option>" & _
+															"<option value=""SE Asia Standard Time"">(UTC+07:00) Bangkok, Hanoi, Jakarta</option>" & _
+															"<option value=""North Asia Standard Time"">(UTC+07:00) Krasnoyarsk</option>" & _
+															"<option value=""China Standard Time"">(UTC+08:00) Beijing, Chongqing, Hong Kong, Urumqi</option>" & _
+															"<option value=""Singapore Standard Time"">(UTC+08:00) Kuala Lumpur, Singapore</option>" & _
+															"<option value=""Ulaanbaatar Standard Time"">(UTC+08:00) Ulaanbaatar</option>" & _
+															"<option value=""North Asia East Standard Time"">(UTC+08:00) Irkutsk</option>" & _
+															"<option value=""Taipei Standard Time"">(UTC+08:00) Taipei</option>" & _
+															"<option value=""W. Australia Standard Time"">(UTC+08:00) Perth</option>" & _
+															"<option value=""Korea Standard Time"">(UTC+09:00) Seoul</option>" & _
+															"<option value=""Tokyo Standard Time"">(UTC+09:00) Osaka, Sapporo, Tokyo</option>" & _
+															"<option value=""Yakutsk Standard Time"">(UTC+09:00) Yakutsk</option>" & _
+															"<option value=""Cen. Australia Standard Time"">(UTC+09:30) Adelaide</option>" & _
+															"<option value=""AUS Central Standard Time"">(UTC+09:30) Darwin</option>" & _
+															"<option value=""E. Australia Standard Time"">(UTC+10:00) Brisbane</option>" & _
+															"<option value=""AUS Eastern Standard Time"">(UTC+10:00) Canberra, Melbourne, Sydney</option>" & _
+															"<option value=""Tasmania Standard Time"">(UTC+10:00) Hobart</option>" & _
+															"<option value=""Vladivostok Standard Time"">(UTC+10:00) Vladivostok</option>" & _
+															"<option value=""West Pacific Standard Time"">(UTC+10:00) Guam, Port Moresby</option>" & _
+															"<option value=""Central Pacific Standard Time"">(UTC+11:00) Solomon Is., New Caledonia</option>" & _
+															"<option value=""Fiji Standard Time"">(UTC+12:00) Fiji</option>" & _
+															"<option value=""Kamchatka Standard Time"">(UTC+12:00) Petropavlovsk-Kamchatsky - Old</option>" & _
+															"<option value=""UTC+12"">(UTC+12:00) Coordinated Universal Time+12</option>" & _
+															"<option value=""New Zealand Standard Time"">(UTC+12:00) Auckland, Wellington</option>" & _
+															"<option value=""Magadan Standard Time"">(UTC+12:00) Magadan</option>" & _
+															"<option value=""Tonga Standard Time"">(UTC+13:00) Nuku'alofa</option>" & _
+															"<option value=""Azores Standard Time"">(UTC-01:00) Azores</option>" & _
+															"<option value=""Cape Verde Standard Time"">(UTC-01:00) Cape Verde Is.</option>" & _
+															"<option value=""Mid-Atlantic Standard Time"">(UTC-02:00) Mid-Atlantic</option>" & _
+															"<option value=""UTC-02"">(UTC-02:00) Coordinated Universal Time-02</option>" & _
+															"<option value=""E. South America Standard Time"">(UTC-03:00) Brasilia</option>" & _
+															"<option value=""Greenland Standard Time"">(UTC-03:00) Greenland</option>" & _
+															"<option value=""Argentina Standard Time"">(UTC-03:00) Buenos Aires</option>" & _
+															"<option value=""Bahia Standard Time"">(UTC-03:00) Salvador</option>" & _
+															"<option value=""Montevideo Standard Time"">(UTC-03:00) Montevideo</option>" & _
+															"<option value=""SA Eastern Standard Time"">(UTC-03:00) Cayenne, Fortaleza</option>" & _
+															"<option value=""Newfoundland Standard Time"">(UTC-03:30) Newfoundland</option>" & _
+															"<option value=""Atlantic Standard Time"">(UTC-04:00) Atlantic Time (Canada)</option>" & _
+															"<option value=""Central Brazilian Standard Time"">(UTC-04:00) Cuiaba</option>" & _
+															"<option value=""Pacific SA Standard Time"">(UTC-04:00) Santiago</option>" & _
+															"<option value=""Paraguay Standard Time"">(UTC-04:00) Asuncion</option>" & _
+															"<option value=""SA Western Standard Time"">(UTC-04:00) Georgetown, La Paz, Manaus, San Juan</option>" & _
+															"<option value=""Venezuela Standard Time"">(UTC-04:30) Caracas</option>" & _
+															"<option value=""Eastern Standard Time"">(UTC-05:00) Eastern Time (US & Canada)</option>" & _
+															"<option value=""SA Pacific Standard Time"">(UTC-05:00) Bogota, Lima, Quito</option>" & _
+															"<option value=""US Eastern Standard Time"">(UTC-05:00) Indiana (East)</option>" & _
+															"<option value=""Canada Central Standard Time"">(UTC-06:00) Saskatchewan</option>" & _
+															"<option value=""Central America Standard Time"">(UTC-06:00) Central America</option>" & _
+															"<option value=""Central Standard Time"">(UTC-06:00) Central Time (US & Canada)</option>" & _
+															"<option value=""Central Standard Time (Mexico)"">(UTC-06:00) Guadalajara, Mexico City, Monterrey</option>" & _
+															"<option value=""Mountain Standard Time"">(UTC-07:00) Mountain Time (US & Canada)</option>" & _
+															"<option value=""Mountain Standard Time (Mexico)"">(UTC-07:00) Chihuahua, La Paz, Mazatlan</option>" & _
+															"<option value=""US Mountain Standard Time"">(UTC-07:00) Arizona</option>" & _
+															"<option value=""Pacific Standard Time"">(UTC-08:00) Pacific Time (US & Canada)</option>" & _
+															"<option value=""Pacific Standard Time (Mexico)"">(UTC-08:00) Baja California</option>" & _
+															"<option value=""Alaskan Standard Time"">(UTC-09:00) Alaska</option>" & _
+															"<option value=""Hawaiian Standard Time"">(UTC-10:00) Hawaii</option>" & _
+															"<option value=""Samoa Standard Time"">(UTC-11:00) Samoa</option>" & _
+															"<option value=""UTC-11"">(UTC-11:00) Coordinated Universal Time-11</option>" & _
+															"<option value=""Dateline Standard Time"">(UTC-12:00) International Date Line West</option>" & _
+														"</select></td>")     
+				                                   
+				                                document.write("</tr>")
+	                                		End If
+                           
+                             				document.write("<tr>")
+		                            		document.write("<td>&nbsp;</td>")
+		                            		document.write("<td></td>")
+		                            		document.write("<td></td>")
+			                            	document.write("</tr>")
+                             			
+	                            		End If 'Regional settings
+	                            		
+	                            		 If Not (SkipComputerName)="YES" Then
+	                            		 	
+	                            		 	document.write("<tr>")
+											document.write("<td colspan=""3"" class=""style6""><Label id=""lblComputerNetwork"">Computer and Network Settings</label></td>")
+                                			document.write("</tr>")
+                                			document.write("<tr>")
+											document.write("<td colspan=""3"" style=""height:5"" class=""style2""></td>")
+                                			document.write("</tr>")
+                                			
+                        					document.write("<tr>")
+		                                	document.write("<td width=""2%"">&nbsp;</td>")
+		                                    document.write("<td width=""20%""><Label id=""lblComputerName"">Computer name</label></td>")
+			                            	document.write("<td width=""60%""><input name=""strHostName"" maxlength=15 type=""text"" style=""width:40%"" tabindex=10></td>")
+			                            	document.write("</tr>")	
+			                        		
+					                       	document.write("<tr>")
+		                                	document.write("<td width=""2%"">&nbsp;</td>")
+					                   		'document.write("<td width=""60%"" colspan=""2""><Label class=""style10"" id=""lblWarnComputerName"">!!Please ensure that the computername account is already created in your Active Directory!!</label></td>")
+	                            			document.write("<td>&nbsp;</td>")
+	                            			document.write("</tr>")	
+	                            			
+			                            End If
+			                            
+			                            If PromptForIPAddress="YES" Then
+									
+											document.write("<tr>")
+											document.write("<td width=""2%"">&nbsp;</td>")
+											document.write("<td width=""20%""><Label id=""lblIPAddress"" >&nbsp;IP Address/NetMask</label></td>")
+											document.write("<td  width=""60%"" colspan=""2"" align=""left""><input name=""strIPAddress"" value="""" maxlength=15 type=""text"" style=""width:30%"" tabindex=11>")
+											document.write("<Label id=""lblIBar"">&nbsp;/&nbsp;</label>")
+											document.write("<input name=""strNetMask"" value=""""  maxlength=2 type=""text"" style=""width:4%"" tabindex=12></td>")
+											document.write("</tr>")	
+										End If
+										
+										If PromptForGatewayAddress="YES" Then
+											document.write("<tr>")
+											document.write("<td width=""2%"">&nbsp;</td>")
+											document.write("<td width=""20%""><Label id=""lblGatewayAddress"">&nbsp;Gateway Address</label></td>")
+											document.write("<td width=""60%""><input name=""strGatewayAddress"" maxlength=15 value="""" type=""text"" style=""width:40%"" tabindex=13></td>")
+											document.write("<td></td>")
+											document.write("<td></td>")
+											document.write("</tr>")	
+										End If
+										
+										If PromptForDNS="YES" Then
+											document.write("<tr>")
+											document.write("<td width=""2%"">&nbsp;</td>")
+											document.write("<td width=""20%""><Label id=""lblprimDNS"">&nbsp;Primary DNS</label></td>")
+											document.write("<td width=""60%""><input name=""strPrimDNSAddress"" value="""" maxlength=15 type=""text"" style=""width:40%"" tabindex=14></td>")
+											document.write("<td></td>")
+											document.write("<td></td>")
+											document.write("</tr>")	
+											document.write("<tr>")
+											document.write("<td width=""2%"">&nbsp;</td>")
+											document.write("<td width=""20%""><Label id=""lblsecDNS"">&nbsp;Secondary DNS</label></td>")
+											document.write("<td width=""60%""><input name=""strSecDNSAddress"" value="""" maxlength=15 type=""text"" style=""width:40%"" tabindex=15></td>")
+											document.write("<td></td>")
+											document.write("<td></td>")
+											document.write("</tr>")	
+										End If
+										
+			                            If PromptForWorkgroup="YES" And Not (SkipDomainJoin)="YES" Then
+			                            
+					                            document.write("<tr>")
+					                       		document.write("<td width=""2%"">&nbsp;</td>")
+												document.write("<td width=""20%"" valign=""top""><Label id=""lblJoin"">Join system to :</label></td>")
+												
+												document.write("<td width=""60%"">")
+												document.write("<INPUT type=""radio"" name=""JoinSystem"" value=""Workgroup""   onclick=""HideUnhideDomain"" tabindex=16>Workgroup <input name=""WorkgroupName"" disabled tabindex=17 style=""width:30%""><br>")
+												document.write("<INPUT type=""radio"" name=""JoinSystem""  value=""Domain""  checked onclick=""HideUnhideDomain"" tabindex=18>Domain</br>")
+												document.write("</td>")
+												document.write("<td></td>")
+							                    document.write("<td></td>")
+							                    document.write("</tr>")	
+			                            
+			                            End If
+			                            			                            	
+		                            	If Not (SkipDomainJoin)="YES" Then
+		                            		
+				                         		If PromptForDomain="YES" Then
+			                            				document.write("<tr>")
+														document.write("<td width=""2%"">&nbsp;</td>")
+														document.write("<td width=""20%""><Label id=""lblPromptDomain"">&nbsp;Join Domain name</label></td>")
+														If Len(Trim(sDefaultDomainReadonly)) > 0 Then
+															document.write("<td width=""60%""><input name=""strPromptDomain""  maxlength=30 type=""text"" readonly style=""width:40%"" tabindex=19></td>")
+														Else
+															document.write("<td width=""60%""><input name=""strPromptDomain""  maxlength=30 type=""text"" style=""width:40%"" tabindex=19></td>")
+														End If
+														document.write("<td></td>")
+														document.write("<td></td>")
+														document.write("</tr>")	
+					                        	Else
+				                        				
+														If Not SkipDomainName="YES" Then
+				                        					document.write("<tr>")
+						                                	document.write("<td width=""2%"">&nbsp;</td>")
+						                                    document.write("<td width=""20%""><Label id=""lblDomainName"">&nbsp;Domain name</label></td>")
+							                            	document.write("<td width=""60%""><Select name=""DomainName"" class=""DynamicListBox""  tabindex=19 style=""width:40%"" OnChange=""GetDetailsFromDomain""></Select></td>")
+							                            	document.write("<td></td>")
+							                            	document.write("<td></td>")
+							                        		document.write("</tr>")	
+				                        				End If
+					                        	End If
+					                        	
+					                        	If PromptForDomainOU="YES" Then
+														document.write("<tr>")
+														document.write("<td width=""2%"">&nbsp;</td>")
+														document.write("<td width=""20%""><Label id=""lblPromptDomainOU"">&nbsp;MachineObjectOU</label></td>")
+														If Len(Trim(sDefaultDomainReadonly)) > 0 Then
+															document.write("<td width=""60%""><input name=""strPromptDomainOU"" type=""text"" readonly style=""width:80%"" tabindex=20></td>")
+														Else
+															document.write("<td width=""60%""><input name=""strPromptDomainOU"" type=""text"" style=""width:80%"" tabindex=20></td>")
+														End If
+														
+														document.write("<td></td>")
+														document.write("<td></td>")
+														document.write("</tr>")	
+												Else
+														If Not SkipDomainOU="YES" Then
+				                        					document.write("<tr>")
+						                                	document.write("<td width=""2%"">&nbsp;</td>")
+						                                    document.write("<td width=""20%""><Label id=""lblDomainOU"">&nbsp;MachineObjectOU</label></td>")
+							                            	document.write("<td width=""60%""><Select name=""DomainOU"" class=""DynamicListBox"" style=""width:80%"" tabindex=20></Select></td>")
+							                            	document.write("<td></td>")
+							                            	document.write("<td></td>")
+							                        		document.write("</tr>")	
+		                        						End If
+												End If
+					                        				
+		                        				If PromptForDomainUser="YES" Then
+		                        							document.write("<tr>")
+		                        							document.write("<td width=""2%"">&nbsp;</td>")
+															document.write("<td  width=""80%"" colspan=""4""><br><Label id=""lblPromptCredentials"">&nbsp;Type a domain account that has permissions to join this computer to the domain:</label></br></td>")
+															
+															document.write("</tr>")	
+															
+															document.write("<tr>")
+															document.write("<td width=""2%"">&nbsp;</td>")
+															document.write("<td width=""20%""><Label id=""lblPromptDomainUser"">&nbsp;User Account</label></td>")
+															document.write("<td width=""60%""><input name=""strPromptDomainUser"" type=""text"" style=""width:40%"" tabindex=21></td>")
+															document.write("<td></td>")
+															document.write("<td></td>")
+															document.write("</tr>")	
+														
+												Else
+				                        				If Not SkipDomainUser="YES" Then
+				                        					document.write("<tr>")
+		                        							document.write("<td width=""2%"">&nbsp;</td>")
+															document.write("<td  width=""80%"" colspan=""4""><br><Label id=""lblPromptCredentials"">&nbsp;Type a domain account that has permissions to join this computer to the domain:</label></br></td>")
+															
+															document.write("</tr>")	
+				                        					document.write("<tr>")
+						                                	document.write("<td width=""2%"">&nbsp;</td>")
+						                                    document.write("<td width=""20%""><Label id=""lblDomainUser"">&nbsp;User Account</label></td>")
+							                            	document.write("<td width=""60%""><input name=""DomainUser""  type=""text"" style=""width:40%"" tabindex=21></td>")
+							                            	document.write("<td></td>")
+							                            	document.write("<td></td>")
+							                        		document.write("</tr>")	
+				                        				End If
+				                        		End If
+				                        		
+				                        		If PromptForDomainUserPassword="YES" Then
+															document.write("<tr>")
+															document.write("<td width=""2%"">&nbsp;</td>")
+															document.write("<td width=""20%""><Label id=""lblPromptDomainUserPwd"">&nbsp;Password</label></td>")
+															document.write("<td width=""60%""><input name=""strPromptDomainUserPwd"" type=""password"" style=""width:40%"" tabindex=22></td>")
+															document.write("<td></td>")
+															document.write("<td></td>")
+															document.write("</tr>")	
+															
+															document.write("<tr>")
+															document.write("<td width=""2%"">&nbsp;</td>")
+															document.write("<td width=""20%""><Label id=""lblPromptDomainUserPwd2"">&nbsp;Confirm Password</label></td>")
+															document.write("<td width=""60%""><input name=""strPromptDomainUserPwd2"" type=""password"" style=""width:40%"" tabindex=23></td>")
+															document.write("<td></td>")
+															document.write("<td></td>")
+															document.write("</tr>")	
+														
+												Else				                        		
+				                        				If Not SkipDomainUserPassword="YES" Then
+				                        					document.write("<tr>")
+						                                	document.write("<td width=""2%"">&nbsp;</td>")
+						                                    document.write("<td width=""20%""><Label id=""lblDomainUserPassword"">&nbsp;Password</label></td>")
+							                            	document.write("<td width=""60%""><input name=""DomainUserPassword"" type=""password"" style=""width:40%"" tabindex=22></td>")
+							                            	document.write("<td></td>")
+							                            	document.write("<td></td>")
+							                        		document.write("</tr>")
+							                        		
+							                        		document.write("<tr>")
+						                                	document.write("<td width=""2%"">&nbsp;</td>")
+						                                    document.write("<td width=""20%""><Label id=""lblDomainUserPassword2"">&nbsp;Confirm Password</label></td>")
+							                            	document.write("<td width=""60%""><input name=""DomainUserPassword2"" type=""password"" style=""width:40%"" tabindex=23></td>")
+							                            	document.write("<td></td>")
+							                            	document.write("<td></td>")
+							                        		document.write("</tr>")
+							                        		
+				                        				End If
+		                        			
+		                        				End If 
+			                            	
+					                   End If   'Not (SkipDomainJoin)="YES"
+					                   
+	                            		If SkipLocationName="YES" And _
+	                            		 	SkipRegionalSettings="YES" And _
+	                            		 			SkipComputerName="YES" And _
+	                            		 				SkipDomainJoin="YES" And _ 
+	                            		 				  SkipProfileName="YES" Then
+	                            		 		
+	                            		 		MsgBox "OSDSettings.ini not configured as expected. Please check your configuration file. Script will be aborted!",16+4096
+	                            		 		
+	                            		 		Window.close
+	                            		 		 			
+	                            		End If
+	                            		
+                            	 </script>
+									
+						</table> 
+					</span>
+                   </div>
+                      
+                </td>            
+            </tr>
+            
+            <!-- Footer of Wizard -->
+			<tr valign="Top"  >
+				<td colspan="2" class="CommandArea" id="RightWizardButtons" align="right">
+                    <button style="width:180" style="height:60" accesskey=C type=submit onclick=ButtonContinueClick ><U>C</U>ontinue</button>&nbsp;&nbsp;
+                </td>
+            </tr>
+
+        </table>
+    </body>
+</html>

@@ -1,0 +1,414 @@
+<html>
+<head>
+<title>Keyboard layout</title>
+
+<link href="Wizard.css" type="text/css" rel="stylesheet">
+        
+<HTA:APPLICATION ID="oLocalize" APPLICATIONNAME="Localize" ICON="dell.ico"
+    	SCROLL="no"
+		SELECTION="no"
+		INNERBORDER="no"
+		BORDER="normal"
+		SINGLEINSTANCE="no"
+		SYSMENU="no"
+		MAXIMIZEBUTTON="no"
+		MINIMIZEBUTTON="no"
+		CAPTION="yes"
+		VERSION="21.02.2017"/>
+    
+<style type="text/css">
+.style2 {
+	border-top-style: solid;
+	border-top-width: 1px;
+}
+
+.style6 {
+	font-size:15px;
+	color:navy;
+	font-weight:lighter
+}
+</style>
+
+
+<script language="vbscript" type="text/vbscript">
+
+Const ForReading = 1
+Const ForWriting = 2
+Const ForAppending = 8
+
+Dim objFSO, RootDrv, oSh, sScriptDir
+Dim sSettingsfile  
+
+Set objFSO = CreateObject("Scripting.FileSystemObject")
+Set oSh = CreateObject("WScript.Shell") 
+
+RootDrv = oSh.ExpandEnvironmentStrings ("%SYSTEMDRIVE%")
+
+sScriptDir = Replace(location.pathname,"%20"," ")
+sScriptDir = Left(sScriptDir, InStrRev(sScriptDir, "\"))
+sParentDir=objFSO.GetParentFolderName(sScriptDir)
+oSh.CurrentDirectory = sScriptDir
+
+Sub Window_onload
+	on error resume next
+	CenterWindow 800,500
+	GetRegDefaultKeyboard
+	
+End Sub	
+
+Sub CenterWindow( widthX, heightY )
+    self.ResizeTo widthX, heightY 
+    self.MoveTo (screen.Width - widthX)/2, (screen.Height - heightY)/2
+End Sub
+
+
+Function GetRegDefaultKeyboard
+dim sName, sID, i, j, Insert, oOption, KeyboardLocale
+    dim FoundPrimary
+    
+    FoundPrimary = False
+    vPEregFound=True
+    
+    ' Test for the 1st registry entry
+    ' Enumerate Keyboard list through WPEUtil.exe
+    on error resume next
+	Const HKEY_LOCAL_MACHINE = &H80000002
+	
+	strComputer = "."
+	 
+	Set objReg=GetObject("winmgmts:{impersonationLevel=impersonate}!\\" & _ 
+	    strComputer & "\root\default:StdRegProv")
+    strKeyPath = "SOFTWARE\Microsoft\Windows NT\CurrentVersion\WinPE\KeyboardLayouts"
+    
+	If objReg.EnumKey(HKEY_LOCAL_MACHINE, strKeyPath, arrSubKeys)=0 Then
+    	vPEregFound=True
+    Else
+    	vPEregFound=False
+    End If
+    
+    if vPEregFound=True Then
+    	If isempty(PEKeybRegRead( "0\Name" )) then
+       ' Not Found, run WpeUtil again
+       oSh.Run "wpeutil.exe ListKeyboardLayout " & GetLocale, 0, True
+      End If
+      
+    end If
+      
+    if KeyboardLocale = "" then
+        KeyboardLocale = hex(GetLocale)   
+        while len(KeyboardLocale) < 4
+            KeyboardLocale = "0" & KeyboardLocale
+        wend
+        KeyboardLocale = KeyboardLocale & ":0000" & KeyboardLocale
+    end if
+	
+    i = 0 
+    strKeyPath = "SOFTWARE\Microsoft\Windows NT\CurrentVersion\WinPE\KeyboardLayouts"
+	If objReg.EnumKey(HKEY_LOCAL_MACHINE, strKeyPath, arrSubKeys)=0 then
+
+	    sName = PEKeybRegRead( i & "\Name" )
+	    sID = PEKeybRegRead( i & "\ID" )
+	    vPEregFound=True
+	    
+	Else
+	
+		vPEregFound=False
+		
+		' List Registry Subkeys using SYSTEM\CurrentControlSet\Control\Keyboard Layouts
+		 on error resume next
+
+		strKeyPath = "SYSTEM\CurrentControlSet\Control\Keyboard Layouts"
+		objReg.EnumKey HKEY_LOCAL_MACHINE, strKeyPath, arrSubKeys
+		 
+		For Each subkey In arrSubKeys
+			
+			If Not IsEmpty(subkey) Then 
+			 	
+			 	strSubKeyPath = "SYSTEM\CurrentControlSet\Control\Keyboard Layouts\" & subkey 
+			 	strValueName = "Layout Text"
+		
+				ret = objReg.GetStringValue(HKEY_LOCAL_MACHINE, strSubKeyPath, strValueName, strValue)
+				
+		       	If ret=0 Then
+		       		
+				sLocale=hex(GetLocale)
+				while len(sLocale) < 4
+            				sLocale = "0" & sLocale
+        			wend
+
+		       		'sID=sLocale & ":" & subkey
+				sID=right(subkey,4) & ":" & subkey
+		       		sName=strValue
+
+				        Insert = -1  ' Default
+				    
+				        for j = 0 to KeyboardList.options.length - 1
+				            if StrComp(sName,KeyboardList.Options(j).Text,VbTextCompare) < 0 then
+				               Insert = j 
+				               exit For
+				            end if            
+				        next
+				
+				        ' Skip if pre-existing
+				        for j = 0 to KeyboardList.options.length - 1
+				            if KeyboardList.options(j).value = sID then            
+				                KeyboardList.options(j).Selected = sID = KeyboardLocale
+				                Insert = empty
+				                exit for
+				            end if            
+				        next
+				        
+				        ' Add entry to the display.
+				        if not isempty(Insert) then
+				            set oOption = document.CreateElement("OPTION")
+				            
+				            if ucase(sID) = ucase(KeyboardLocale) then
+				                FoundPrimary = True
+				                oOption.Selected = True                
+				            elseif FoundPrimary = False and ucase(right(sID,8)) = ucase(right(KeyboardLocale,8)) then
+				                oOption.Selected = True                
+				            end if 
+				            oOption.text = sName
+				            oOption.Value = sID
+				            KeyboardList.Add oOption, Insert
+				        end If
+				        
+		       	End If   
+		
+		    End If
+		    
+		Next
+	End If
+    
+    
+    If vPEregFound=True Then
+		    
+		    do while not isempty(sName) and not isempty(sID)
+		    
+		        Insert = -1  ' Default
+		    
+		        for j = 0 to KeyboardList.options.length - 1
+		            if StrComp(sName,KeyboardList.Options(j).Text,VbTextCompare) < 0 then
+		               Insert = j 
+		               exit For
+		            end if            
+		        next
+		
+		        ' Skip if pre-existing
+		        for j = 0 to KeyboardList.options.length - 1
+		            if KeyboardList.options(j).value = sID then            
+		                KeyboardList.options(j).Selected = sID = KeyboardLocale
+		                Insert = empty
+		                exit for
+		            end if            
+		        next
+		        
+		        ' Add entry to the display.
+		        if not isempty(Insert) then
+		            set oOption = document.CreateElement("OPTION")
+		            
+		            if ucase(sID) = ucase(KeyboardLocale) then
+		                FoundPrimary = True
+		                oOption.Selected = True                
+		            elseif FoundPrimary = False and ucase(right(sID,8)) = ucase(right(KeyboardLocale,8)) then
+		                oOption.Selected = True                
+		            end if 
+		            oOption.text = sName
+		            oOption.Value = sID
+		            KeyboardList.Add oOption, Insert
+		        end if
+		
+		        i = i + 1
+		        sName = PEKeybRegRead( i & "\Name" )
+		        sID = PEKeybRegRead( i & "\ID" )
+		    Loop
+	End If
+	
+End Function
+
+
+Function PEKeybRegRead( KeyValue )
+   on error resume next
+      PEKeybRegRead = oSh.RegRead("HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\WinPE\KeyboardLayouts\" & GetLocale & "\" & KeyValue)
+	on error goto 0
+end function 
+
+Sub ButtonContinueClick
+	Dim myVar
+   	If Len(Trim(KeyboardList.value)) =0 Then
+    	MsgBox "Please Select Keyboard ...",,"Field Control"
+    		document.getElementById("KeyboardList").focus
+    	Exit Sub
+    End If 
+    document.body.style.cursor = "wait"
+    setCurrentKeyboard
+	window.Close
+End Sub
+
+Sub setCurrentKeyboard
+
+	On Error Resume Next
+
+	If UCase(RootDrv)="X:" Then
+   		'In WinPE session
+		sCmd = "wpeutil.exe SetKeyboardLayout " & KeyboardList.value
+		oSh.run sCmd, 0 , True
+		
+	Else 
+		'In customer Windows OS session
+		sKeybXML=sScriptDir  & "keyb.xml"
+		If objFSO.FileExists(sKeybXML) Then
+		 	objFSO.DeleteFile sKeybXML, True
+		End If
+		
+		CreateKeyb_XML sKeybXML, KeyboardList.value
+		
+		sCmd="control intl.cpl,, /f:" & Chr(34) & sKeybXML & Chr(34)
+		oSh.run sCmd, 0 ,true
+		
+		
+		
+		If KeyboardList.value <> "0409:00000409" Then 
+			If objFSO.FileExists(sKeybXML) Then
+			 	objFSO.DeleteFile sKeybXML, True
+			End If
+			
+			RemoveKeyb_XML sKeybXML, "0409:00000409"
+			
+			sCmd="control intl.cpl,, /f:" & Chr(34) & sKeybXML & Chr(34)
+			oSh.run sCmd, 0 ,true
+		End If
+		
+		If KeyboardList.value <> "0809:00000809" Then 
+			If objFSO.FileExists(sKeybXML) Then
+			 	objFSO.DeleteFile sKeybXML, True
+			End If
+			
+			RemoveKeyb_XML sKeybXML, "0809:00000809"
+			
+			sCmd="control intl.cpl,, /f:" & Chr(34) & sKeybXML & Chr(34)
+			oSh.run sCmd, 0 ,true
+		End If
+		
+	End If
+	
+end Sub
+
+Sub CreateKeyb_XML(sXML, sKeyboard)
+
+	Set xmlDoc = CreateObject("Microsoft.XMLDOM")  
+	  
+	Set objRoot = xmlDoc.createElement("gs:GlobalizationServices")  
+	xmlDoc.appendChild objRoot
+	objRoot.setAttribute "xmlns:gs","urn:longhornGlobalizationUnattend"
+	objRoot.appendChild xmlDoc.createComment("User List ")
+	
+	
+	Set objRecord = xmlDoc.createElement("gs:UserList") 
+	objRoot.appendChild objRecord 
+	  
+	Set objName = xmlDoc.createElement("gs:User")  
+	objRecord.appendChild objName
+	objName.setAttribute "UserID","Current"
+
+	objRoot.appendChild xmlDoc.createComment("input preferences ")
+	
+	Set objRecord = xmlDoc.createElement("gs:InputPreferences") 
+	objRoot.appendChild objRecord 
+	  
+	Set objName = xmlDoc.createElement("gs:InputLanguageID")  
+	objRecord.appendChild objName
+	objName.setAttribute "Action","add"
+	objName.setAttribute "ID",sKeyboard
+	objName.setAttribute "Default","true"
+	
+	xmlDoc.Save sXML
+
+End Sub
+
+Sub RemoveKeyb_XML(sXML, sKeyboard)
+
+	Set xmlDoc = CreateObject("Microsoft.XMLDOM")  
+	  
+	Set objRoot = xmlDoc.createElement("gs:GlobalizationServices")  
+	xmlDoc.appendChild objRoot
+	objRoot.setAttribute "xmlns:gs","urn:longhornGlobalizationUnattend"
+	objRoot.appendChild xmlDoc.createComment("User List ")
+	
+	
+	Set objRecord = xmlDoc.createElement("gs:UserList") 
+	objRoot.appendChild objRecord 
+	  
+	Set objName = xmlDoc.createElement("gs:User")  
+	objRecord.appendChild objName
+	objName.setAttribute "UserID","Current"
+
+	objRoot.appendChild xmlDoc.createComment("input preferences ")
+	
+	Set objRecord = xmlDoc.createElement("gs:InputPreferences") 
+	objRoot.appendChild objRecord 
+	  
+	Set objName = xmlDoc.createElement("gs:InputLanguageID")  
+	objRecord.appendChild objName
+	objName.setAttribute "Action","remove"
+	objName.setAttribute "ID",sKeyboard
+	
+	xmlDoc.Save sXML
+
+End Sub
+
+</script>
+
+<!--
+' // //Prevent the abort of the HTA page if pressing Alt-F4 
+-->
+ <SCRIPT LANGUAGE="JavaScript">  
+function document.onkeydown() {   
+      var alt=window.event.altKey;  
+      if (alt && event.keyCode==115) {  
+           event.keyCode=0;  
+          event.cancelBubble=true;  
+           return false;  
+           }  
+     } 
+ </SCRIPT>  
+ 
+</head>
+
+<body Language="VBScript">
+        <!-- Create a 2 x 3 table to place all of our content in. Makes resizing of windows easier -->
+
+        <table cellpadding="0" cellspacing="0" border="0" width="100%" style="height: 100%;">
+
+                        <!-- Content Area of Wizard -->
+             <tr colspan=2>
+			
+                <td halign="left" valign=top style="background-color: #F0F0F0; width: expression( Math.max(documentElement.offsetWidth, 80));">
+                 
+                    <div id="MyContentArea" class="ContentArea" style="background-color: #F0F0F0; padding: 16px;">  
+                        <span style="width: 100%;">                	
+                            <table  cellpadding="1" cellspacing="1" border="0" width="100%" style="height: 100%;"> 
+                                <tr>
+                                </tr>
+                                <tr>
+									<td>Select your keyboard layout&nbsp</td>
+                                </tr>
+                            	<tr>
+                                    <td><Select id="KeyboardList" class="DynamicListBox" tabindex=2 style="width:60%"></select></td>
+                                </tr>
+								<tr>
+									<td>&nbsp</td>
+								</tr>
+								<tr >
+		                			<td  align="Right">
+		                   			 <button style="width:180" style="height:60" accesskey=C type=submit onclick=ButtonContinueClick ><U>C</U>ontinue</button>
+		                			</td>
+		            			</tr>
+					</table> 
+                 </span>
+                </div>
+              </td>            
+            </tr>
+        </table>
+    </body>
+</html>

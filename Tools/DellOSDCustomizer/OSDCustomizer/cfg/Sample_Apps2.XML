@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Applications>
+	<Application ID="App1">
+		<Name>Adobe Reader EN</Name>
+		<Description>Adobe Reader English version 11</Description>
+		<SupportedSystems>*</SupportedSystems>
+		<ModelName></ModelName>
+		<PNPId></PNPId>
+		<WorkingDirectory>C:\DellOSDCustomizer\Applications\AdobeReader</WorkingDirectory>
+		<Commandline>Install.cmd</Commandline>
+		<Reboot>false</Reboot>
+	</Application>
+	<Application ID="App2">
+		<Name>CMTrace</Name>
+		<Description>CMTrace utility</Description>
+		<SupportedSystems>Notebooks</SupportedSystems>
+		<ModelName>Latitude E7440</ModelName>
+		<ModelName>Latitude E7240</ModelName>
+		<PNPId></PNPId>
+		<PNPId></PNPId>
+		<WorkingDirectory>C:\DellOSDCustomizer\Applications\CMTrace</WorkingDirectory>
+		<Commandline>copy.exe CMtrace.exe c:\windows\system32\</Commandline>
+		<Reboot>false</Reboot>
+	</Application>
+	<Application ID="App3">
+		<Name>FlashPlayer</Name>
+		<Description>Flash Player 17 Plugin</Description>
+		<SupportedSystems>*</SupportedSystems>
+		<ModelName></ModelName>
+		<PNPId></PNPId>
+		<WorkingDirectory>C:\DellOSDCustomizer\Applications\FlashPlayer</WorkingDirectory>
+		<Commandline>Install.cmd</Commandline>
+		<Reboot>true</Reboot>
+	</Application>
+	<Application ID="App4">
+		<Name>jre1.8.0_40</Name>
+		<Description>Jre 1.8.0_40 English</Description>
+		<SupportedSystems>*</SupportedSystems>
+		<ModelName></ModelName>
+		<PNPId></PNPId>
+		<WorkingDirectory>C:\DellOSDCustomizer\Applications\Java_Runtime\Java_x64</WorkingDirectory>
+		<Commandline>Install.cmd</Commandline>
+		<Reboot>False</Reboot>
+	</Application>
+	<Application ID="App5">
+		<Name>Adobe_ShockwavePlayer</Name>
+		<Description>Adobe_ShockwavePlayer_12.1.7.157_EN_x86</Description>
+		<ModelName>*</ModelName>
+		<PNPId></PNPId>
+		<PNPId></PNPId>
+		<WorkingDirectory>C:\DellOSDCustomizer\Applications\ShockwavePlayer</WorkingDirectory>
+		<Commandline>Install.cmd</Commandline>
+		<Reboot>true</Reboot>
+	</Application>
+	<Application ID="App6">
+		<Name>PDFCreator</Name>
+		<Description>Freeware_PDFCreator_1.7.3_EN_x86</Description>
+		<SupportedSystems>Desktops</SupportedSystems>
+		<ModelName></ModelName>
+		<PNPId></PNPId>
+		<WorkingDirectory>C:\DellOSDCustomizer\Applications\PDFCreator</WorkingDirectory>
+		<Commandline>Install.cmd</Commandline>
+		<Reboot>False</Reboot>
+	</Application>
+	<Application ID="App7">
+		<Name>Teamviewer</Name>
+		<Description>Teamviewer_10_user</Description>
+		<SupportedSystems>*</SupportedSystems>
+		<ModelName></ModelName>
+		<PNPId></PNPId>
+		<WorkingDirectory>C:\DellOSDCustomizer\Applications\TeamViewer\v10.0.38475.0\User\rev1</WorkingDirectory>
+		<Commandline>Install_Teamviewer_10_user.cmd</Commandline>
+		<Reboot>true</Reboot>
+	</Application>
+</Applications>

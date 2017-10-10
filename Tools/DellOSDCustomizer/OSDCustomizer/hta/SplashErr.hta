@@ -1,0 +1,127 @@
+<html>
+<head>
+<title>Splash</title>
+<HTA:APPLICATION 
+	ID="ObjSplash"
+	WINDOWSTATE="maximize"
+	BORDER="none"
+	INNERBORDER="no"
+	SHOWINTASKBAR="no"
+	SCROLL="no"
+	APPLICATIONNAME="Splash"
+	NAVIGABLE="yes"
+	ICON="dell.ico"
+	/>
+<style type="text/css">
+.style1 {
+	color: #102C40;
+	font-family: "Arial";
+	size=7;
+}
+.style2 {
+	color: #102C40;
+	font-family: "Arial";
+	font-size: small;
+}
+</style>
+</head>
+<SCRIPT LANGUAGE="VBScript">
+
+On Error Resume Next
+
+Const ForReading = 1
+Const ForWriting = 2
+
+Dim  sScriptDir, objFSO, sLogFile, iTotalPartitions, sOSImage
+
+Set oSh = CreateObject("WScript.Shell") 
+Set objFSO = CreateObject("Scripting.FileSystemObject")
+
+'RootDrv=oSh.ExpandEnvironmentStrings ("%SYSTEMDRIVE%")
+
+'Set the working directory
+
+sScriptDir = Replace(location.pathname,"%20"," ")
+sScriptDir =Left(sScriptDir, InStrRev(sScriptDir, "\"))   
+sParentDir=objFSO.GetParentFolderName(sScriptDir)
+
+sLogFile=sParentDir  & "\OSDCustomizer.log"
+
+Sub Window_OnLoad
+      
+        Set objFile = objFSO.OpenTextFile _
+            (sLogFile, ForReading)
+        Do Until objFile.AtEndOfStream
+            strLine = objFile.ReadLine
+            Set objOption = Document.createElement("OPTION")
+            objOption.Text = strLine
+            objOption.Value = strLine
+            TxtArea.Add(objOption)
+        Loop
+        objFile.Close
+End Sub
+
+sub ButtonOk
+	window.Close
+end Sub
+
+</SCRIPT>
+
+<body Language="VBScript" style="background-color: #FF0000;">
+	<table align="center"; border="0">
+	<colgroup span="1">
+		<col width="100%"></col>
+	</colgroup>
+	
+	<tr>
+		<td align="center"><img border="0" src="dell.bmp"></td>
+	</tr>
+	<tr>
+		<td></td
+	</tr>
+	<tr>
+		<td></td
+	</tr>
+	<tr>
+		<td></td
+	</tr>
+	<tr>
+		<td><H1 class="style1" align="center">Installation Faillure</H1>
+	
+	</tr>
+	<tr>
+		<script LANGUAGE="VBScript">
+			Dim i
+		    arrCommands = Split(ObjSplash.commandLine, "/")
+		    
+		    i= Ubound(arrCommands)
+		    sMsg=""
+		    
+		    If i > 0 Then
+		    	sMsg=arrCommands(i)
+
+		    	document.write("<td class=""style2"" align=""center"">" & sMsg)
+		    	document.write("</td>")
+
+			Else
+
+				document.write("<td class=""style2"" align=""center"">Please check the OSCustomizer.log below. A faillure occured during task execution.")
+				document.write("</td>")
+
+			End If
+		
+		</script>
+		</tr>	
+		
+		<tr>
+			<td class="style2"><select size="30" name="TxtArea" ></select>
+			</td>
+		</tr>
+		
+		<tr>
+			<td class="style2" align="center"><button id=buttonOk onclick=ButtonOk style="visibility:visible">Close Form</button>
+			</td>
+		</tr>
+
+</body>
+</html>

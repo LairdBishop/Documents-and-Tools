@@ -1,0 +1,1459 @@
+﻿<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Locales xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<Locale ID="0436">
+		<SName>af-ZA</SName>
+		<RefName>Afrikaans (South Africa)</RefName>
+		<KeyboardID>409</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>209</CountryID>
+	</Locale>
+	<Locale ID="041c">
+		<SName>sq-AL</SName>
+		<RefName>Albanian (Albania)</RefName>
+		<KeyboardID>41c</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>6</CountryID>
+	</Locale>
+	<Locale ID="0484">
+		<SName>gsw-FR</SName>
+		<RefName>Alsatian (France)</RefName>
+		<KeyboardID>0484</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>84</CountryID>
+	</Locale>
+	<Locale ID="045e">
+		<SName>am-ET</SName>
+		<RefName>Amharic (Ethiopia)</RefName>
+		<KeyboardID>045E</KeyboardID>
+		<IsSysLocale>N</IsSysLocale>
+		<CountryID>73</CountryID>
+	</Locale>
+	<Locale ID="1401">
+		<SName>ar-DZ</SName>
+		<RefName>Arabic (Algeria)</RefName>
+		<KeyboardID>20401</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>4</CountryID>
+	</Locale>
+	<Locale ID="3c01">
+		<SName>ar-BH</SName>
+		<RefName>Arabic (Bahrain)</RefName>
+		<KeyboardID>401</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>17</CountryID>
+	</Locale>
+	<Locale ID="0c01">
+		<SName>ar-EG</SName>
+		<RefName>Arabic (Egypt)</RefName>
+		<KeyboardID>401</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>67</CountryID>
+	</Locale>
+	<Locale ID="0801">
+		<SName>ar-IQ</SName>
+		<RefName>Arabic (Iraq)</RefName>
+		<KeyboardID>401</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>121</CountryID>
+	</Locale>
+	<Locale ID="2c01">
+		<SName>ar-JO</SName>
+		<RefName>Arabic (Jordan)</RefName>
+		<KeyboardID>401</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>126</CountryID>
+	</Locale>
+	<Locale ID="3401">
+		<SName>ar-KW</SName>
+		<RefName>Arabic (Kuwait)</RefName>
+		<KeyboardID>401</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>136</CountryID>
+	</Locale>
+	<Locale ID="3001">
+		<SName>ar-LB</SName>
+		<RefName>Arabic (Lebanon)</RefName>
+		<KeyboardID>401</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>139</CountryID>
+	</Locale>
+	<Locale ID="1001">
+		<SName>ar-LY</SName>
+		<RefName>Arabic (Libya)</RefName>
+		<KeyboardID>20401</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>148</CountryID>
+	</Locale>
+	<Locale ID="1801">
+		<SName>ar-MA</SName>
+		<RefName>Arabic (Morocco)</RefName>
+		<KeyboardID>20401</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>159</CountryID>
+	</Locale>
+	<Locale ID="2001">
+		<SName>ar-OM</SName>
+		<RefName>Arabic (Oman)</RefName>
+		<KeyboardID>401</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>164</CountryID>
+	</Locale>
+	<Locale ID="4001">
+		<SName>ar-QA</SName>
+		<RefName>Arabic (Qatar)</RefName>
+		<KeyboardID>401</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>197</CountryID>
+	</Locale>
+	<Locale ID="0401">
+		<SName>ar-SA</SName>
+		<RefName>Arabic (Saudi Arabia)</RefName>
+		<KeyboardID>401</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>205</CountryID>
+	</Locale>
+	<Locale ID="2801">
+		<SName>ar-SY</SName>
+		<RefName>Arabic (Syria)</RefName>
+		<KeyboardID>401</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>222</CountryID>
+	</Locale>
+	<Locale ID="1c01">
+		<SName>ar-TN</SName>
+		<RefName>Arabic (Tunisia)</RefName>
+		<KeyboardID>20401</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>234</CountryID>
+	</Locale>
+	<Locale ID="3801">
+		<SName>ar-AE</SName>
+		<RefName>Arabic (U.A.E.)</RefName>
+		<KeyboardID>401</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>224</CountryID>
+	</Locale>
+	<Locale ID="2401">
+		<SName>ar-YE</SName>
+		<RefName>Arabic (Yemen)</RefName>
+		<KeyboardID>401</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>261</CountryID>
+	</Locale>
+	<Locale ID="042b">
+		<SName>hy-AM</SName>
+		<RefName>Armenian (Armenia)</RefName>
+		<KeyboardID>42b</KeyboardID>
+		<IsSysLocale>N</IsSysLocale>
+		<CountryID>7</CountryID>
+	</Locale>
+	<Locale ID="044d">
+		<SName>as-IN</SName>
+		<RefName>Assamese (India)</RefName>
+		<KeyboardID>044D</KeyboardID>
+		<IsSysLocale>N</IsSysLocale>
+		<CountryID>113</CountryID>
+	</Locale>
+	<Locale ID="082c">
+		<SName>az-Cyrl-AZ</SName>
+		<RefName>Azeri (Cyrillic, Azerbaijan)</RefName>
+		<KeyboardID>82c</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>5</CountryID>
+	</Locale>
+	<Locale ID="042c">
+		<SName>az-Latn-AZ</SName>
+		<RefName>Azeri (Latin, Azerbaijan)</RefName>
+		<KeyboardID>42c</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>5</CountryID>
+	</Locale>
+	<Locale ID="046D">
+		<SName>ba-RU</SName>
+		<RefName>Bashkir (Russia)</RefName>
+		<KeyboardID>046D</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>203</CountryID>
+	</Locale>
+	<Locale ID="042d">
+		<SName>eu-ES</SName>
+		<RefName>Basque (Basque)</RefName>
+		<KeyboardID>40a</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>217</CountryID>
+	</Locale>
+	<Locale ID="0423">
+		<SName>be-BY</SName>
+		<RefName>Belarusian (Belarus)</RefName>
+		<KeyboardID>423</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>29</CountryID>
+	</Locale>
+	<Locale ID="0845">
+		<SName>bn-BD</SName>
+		<RefName>Bengali (Bangladesh)</RefName>
+		<KeyboardID>0845</KeyboardID>
+		<IsSysLocale>N</IsSysLocale>
+		<CountryID>23</CountryID>
+	</Locale>
+	<Locale ID="0445">
+		<SName>bn-IN</SName>
+		<RefName>Bengali (India)</RefName>
+		<KeyboardID>0445</KeyboardID>
+		<IsSysLocale>N</IsSysLocale>
+		<CountryID>113</CountryID>
+	</Locale>
+	<Locale ID="201a">
+		<SName>bs-Cyrl-BA</SName>
+		<RefName>Bosnian (Cyrillic, Bosnia and Herzegovina)</RefName>
+		<KeyboardID>201A</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>25</CountryID>
+	</Locale>
+	<Locale ID="141a">
+		<SName>bs-Latn-BA</SName>
+		<RefName>Bosnian (Latin, Bosnia and Herzegovina)</RefName>
+		<KeyboardID>141A</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>25</CountryID>
+	</Locale>
+	<Locale ID="047e">
+		<SName>br-FR</SName>
+		<RefName>Breton (France)</RefName>
+		<KeyboardID>047E</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>84</CountryID>
+	</Locale>
+	<Locale ID="0402">
+		<SName>bg-BG</SName>
+		<RefName>Bulgarian (Bulgaria)</RefName>
+		<KeyboardID>30402</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>35</CountryID>
+	</Locale>
+	<Locale ID="0403">
+		<SName>ca-ES</SName>
+		<RefName>Catalan (Catalan)</RefName>
+		<KeyboardID>40a</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>217</CountryID>
+	</Locale>
+	<Locale ID="0004">
+		<SName>zh-Hans</SName>
+		<RefName>Chinese (Simplified)</RefName>
+		<KeyboardID>0004</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>N/A</CountryID>
+	</Locale>
+	<Locale ID="0804">
+		<SName>zh-CN</SName>
+		<RefName>Chinese (Simplified, PRC)</RefName>
+		<KeyboardID>804</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>45</CountryID>
+	</Locale>
+	<Locale ID="1004">
+		<SName>zh-SG</SName>
+		<RefName>Chinese (Simplified, Singapore)</RefName>
+		<KeyboardID>409</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>215</CountryID>
+	</Locale>
+	<Locale ID="7C04">
+		<SName>zh-Hant</SName>
+		<RefName>Chinese (Traditional)</RefName>
+		<KeyboardID>7C04</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>N/A</CountryID>
+	</Locale>
+	<Locale ID="0c04">
+		<SName>zh-HK</SName>
+		<RefName>Chinese (Traditional, Hong Kong S.A.R.)</RefName>
+		<KeyboardID>404</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>104</CountryID>
+	</Locale>
+	<Locale ID="1404">
+		<SName>zh-MO</SName>
+		<RefName>Chinese (Traditional, Macao S.A.R.)</RefName>
+		<KeyboardID>409</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>158</CountryID>
+	</Locale>
+	<Locale ID="0404">
+		<SName>zh-TW</SName>
+		<RefName>Chinese (Traditional, Taiwan)</RefName>
+		<KeyboardID>409</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>237</CountryID>
+	</Locale>
+	<Locale ID="0483">
+		<SName>co-FR</SName>
+		<RefName>Corsican (France)</RefName>
+		<KeyboardID>0483</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>84</CountryID>
+	</Locale>
+	<Locale ID="041a">
+		<SName>hr-HR</SName>
+		<RefName>Croatian (Croatia)</RefName>
+		<KeyboardID>41a</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>108</CountryID>
+	</Locale>
+	<Locale ID="101a">
+		<SName>hr-BA</SName>
+		<RefName>Croatian (Latin, Bosnia and Herzegovina)</RefName>
+		<KeyboardID>101A</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>25</CountryID>
+	</Locale>
+	<Locale ID="0405">
+		<SName>cs-CZ</SName>
+		<RefName>Czech (Czech Republic)</RefName>
+		<KeyboardID>405</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>75</CountryID>
+	</Locale>
+	<Locale ID="0406">
+		<SName>da-DK</SName>
+		<RefName>Danish (Denmark)</RefName>
+		<KeyboardID>406</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>61</CountryID>
+	</Locale>
+	<Locale ID="048c">
+		<SName>prs-AF</SName>
+		<RefName>Dari (Afghanistan)</RefName>
+		<KeyboardID>048C</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>3</CountryID>
+	</Locale>
+	<Locale ID="0465">
+		<SName>dv-MV</SName>
+		<RefName>Divehi (Maldives)</RefName>
+		<KeyboardID>0465</KeyboardID>
+		<IsSysLocale>N</IsSysLocale>
+		<CountryID>165</CountryID>
+	</Locale>
+	<Locale ID="0813">
+		<SName>nl-BE</SName>
+		<RefName>Dutch (Belgium)</RefName>
+		<KeyboardID>813</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>21</CountryID>
+	</Locale>
+	<Locale ID="0413">
+		<SName>nl-NL</SName>
+		<RefName>Dutch (Netherlands)</RefName>
+		<KeyboardID>20409</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>176</CountryID>
+	</Locale>
+	<Locale ID="0c09">
+		<SName>en-AU</SName>
+		<RefName>English (Australia)</RefName>
+		<KeyboardID>409</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>12</CountryID>
+	</Locale>
+	<Locale ID="2809">
+		<SName>en-BZ</SName>
+		<RefName>English (Belize)</RefName>
+		<KeyboardID>409</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>24</CountryID>
+	</Locale>
+	<Locale ID="1009">
+		<SName>en-CA</SName>
+		<RefName>English (Canada)</RefName>
+		<KeyboardID>409</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>39</CountryID>
+	</Locale>
+	<Locale ID="2409">
+		<SName>en-029</SName>
+		<RefName>English (Caribbean)</RefName>
+		<KeyboardID>409</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>N/A</CountryID>
+	</Locale>
+	<Locale ID="4009">
+		<SName>en-IN</SName>
+		<RefName>English (India)</RefName>
+		<KeyboardID>4009</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>113</CountryID>
+	</Locale>
+	<Locale ID="1809">
+		<SName>en-IE</SName>
+		<RefName>English (Ireland)</RefName>
+		<KeyboardID>1809</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>68</CountryID>
+	</Locale>
+	<Locale ID="2009">
+		<SName>en-JM</SName>
+		<RefName>English (Jamaica)</RefName>
+		<KeyboardID>409</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>124</CountryID>
+	</Locale>
+	<Locale ID="4409">
+		<SName>en-MY</SName>
+		<RefName>English (Malaysia)</RefName>
+		<KeyboardID>4409</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>167</CountryID>
+	</Locale>
+	<Locale ID="1409">
+		<SName>en-NZ</SName>
+		<RefName>English (New Zealand)</RefName>
+		<KeyboardID>409</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>183</CountryID>
+	</Locale>
+	<Locale ID="3409">
+		<SName>en-PH</SName>
+		<RefName>English (Republic of the Philippines)</RefName>
+		<KeyboardID>409</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>201</CountryID>
+	</Locale>
+	<Locale ID="4809">
+		<SName>en-SG</SName>
+		<RefName>English (Singapore)</RefName>
+		<KeyboardID>4809</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>215</CountryID>
+	</Locale>
+	<Locale ID="1c09">
+		<SName>en-ZA</SName>
+		<RefName>English (South Africa)</RefName>
+		<KeyboardID>409</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>209</CountryID>
+	</Locale>
+	<Locale ID="2c09">
+		<SName>en-TT</SName>
+		<RefName>English (Trinidad and Tobago)</RefName>
+		<KeyboardID>409</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>225</CountryID>
+	</Locale>
+	<Locale ID="0809">
+		<SName>en-GB</SName>
+		<RefName>English (United Kingdom)</RefName>
+		<KeyboardID>809</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>242</CountryID>
+	</Locale>
+	<Locale ID="0409">
+		<SName>en-US</SName>
+		<RefName>English (United States)</RefName>
+		<KeyboardID>409</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>244</CountryID>
+	</Locale>
+	<Locale ID="3009">
+		<SName>en-ZW</SName>
+		<RefName>English (Zimbabwe)</RefName>
+		<KeyboardID>409</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>264</CountryID>
+	</Locale>
+	<Locale ID="0425">
+		<SName>et-EE</SName>
+		<RefName>Estonian (Estonia)</RefName>
+		<KeyboardID>425</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>70</CountryID>
+	</Locale>
+	<Locale ID="0438">
+		<SName>fo-FO</SName>
+		<RefName>Faroese (Faroe Islands)</RefName>
+		<KeyboardID>406</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>81</CountryID>
+	</Locale>
+	<Locale ID="0464">
+		<SName>fil-PH</SName>
+		<RefName>Filipino (Philippines)</RefName>
+		<KeyboardID>0464</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>201</CountryID>
+	</Locale>
+	<Locale ID="040b">
+		<SName>fi-FI</SName>
+		<RefName>Finnish (Finland)</RefName>
+		<KeyboardID>40b</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>77</CountryID>
+	</Locale>
+	<Locale ID="080c">
+		<SName>fr-BE</SName>
+		<RefName>French (Belgium)</RefName>
+		<KeyboardID>80c</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>21</CountryID>
+	</Locale>
+	<Locale ID="0c0c">
+		<SName>fr-CA</SName>
+		<RefName>French (Canada)</RefName>
+		<KeyboardID>11009</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>39</CountryID>
+	</Locale>
+	<Locale ID="040c">
+		<SName>fr-FR</SName>
+		<RefName>French (France)</RefName>
+		<KeyboardID>40c</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>84</CountryID>
+	</Locale>
+	<Locale ID="140c">
+		<SName>fr-LU</SName>
+		<RefName>French (Luxembourg)</RefName>
+		<KeyboardID>40c</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>147</CountryID>
+	</Locale>
+	<Locale ID="180c">
+		<SName>fr-MC</SName>
+		<RefName>French (Monaco)</RefName>
+		<KeyboardID>40c</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>158</CountryID>
+	</Locale>
+	<Locale ID="100c">
+		<SName>fr-CH</SName>
+		<RefName>French (Switzerland)</RefName>
+		<KeyboardID>100c</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>223</CountryID>
+	</Locale>
+	<Locale ID="0462">
+		<SName>fy-NL</SName>
+		<RefName>Frisian (Netherlands)</RefName>
+		<KeyboardID>0462</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>176</CountryID>
+	</Locale>
+	<Locale ID="0456">
+		<SName>gl-ES</SName>
+		<RefName>Galician (Galician)</RefName>
+		<KeyboardID>0456</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>217</CountryID>
+	</Locale>
+	<Locale ID="0437">
+		<SName>ka-GE</SName>
+		<RefName>Georgian (Georgia)</RefName>
+		<KeyboardID>437</KeyboardID>
+		<IsSysLocale>N</IsSysLocale>
+		<CountryID>88</CountryID>
+	</Locale>
+	<Locale ID="0c07">
+		<SName>de-AT</SName>
+		<RefName>German (Austria)</RefName>
+		<KeyboardID>407</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>14</CountryID>
+	</Locale>
+	<Locale ID="0407">
+		<SName>de-DE</SName>
+		<RefName>German (Germany)</RefName>
+		<KeyboardID>407</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>94</CountryID>
+	</Locale>
+	<Locale ID="1407">
+		<SName>de-LI</SName>
+		<RefName>German (Liechtenstein)</RefName>
+		<KeyboardID>407</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>145</CountryID>
+	</Locale>
+	<Locale ID="1007">
+		<SName>de-LU</SName>
+		<RefName>German (Luxembourg)</RefName>
+		<KeyboardID>407</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>147</CountryID>
+	</Locale>
+	<Locale ID="0807">
+		<SName>de-CH</SName>
+		<RefName>German (Switzerland)</RefName>
+		<KeyboardID>807</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>223</CountryID>
+	</Locale>
+	<Locale ID="0408">
+		<SName>el-GR</SName>
+		<RefName>Greek (Greece)</RefName>
+		<KeyboardID>408</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>98</CountryID>
+	</Locale>
+	<Locale ID="046f">
+		<SName>kl-GL</SName>
+		<RefName>Greenlandic (Greenland)</RefName>
+		<KeyboardID>046F</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>93</CountryID>
+	</Locale>
+	<Locale ID="0447">
+		<SName>gu-IN</SName>
+		<RefName>Gujarati (India)</RefName>
+		<KeyboardID>0447</KeyboardID>
+		<IsSysLocale>N</IsSysLocale>
+		<CountryID>113</CountryID>
+	</Locale>
+	<Locale ID="0468">
+		<SName>ha-Latn-NG</SName>
+		<RefName>Hausa (Latin, Nigeria)</RefName>
+		<KeyboardID>0468</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>175</CountryID>
+	</Locale>
+	<Locale ID="040d">
+		<SName>he-IL</SName>
+		<RefName>Hebrew (Israel)</RefName>
+		<KeyboardID>409</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>117</CountryID>
+	</Locale>
+	<Locale ID="0439">
+		<SName>hi-IN</SName>
+		<RefName>Hindi (India)</RefName>
+		<KeyboardID>10439</KeyboardID>
+		<IsSysLocale>N</IsSysLocale>
+		<CountryID>113</CountryID>
+	</Locale>
+	<Locale ID="040e">
+		<SName>hu-HU</SName>
+		<RefName>Hungarian (Hungary)</RefName>
+		<KeyboardID>40e</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>109</CountryID>
+	</Locale>
+	<Locale ID="040f">
+		<SName>is-IS</SName>
+		<RefName>Icelandic (Iceland)</RefName>
+		<KeyboardID>40f</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>110</CountryID>
+	</Locale>
+	<Locale ID="0468">
+		<SName>ig-NG</SName>
+		<RefName>Igbo (Nigeria)</RefName>
+		<KeyboardID>0470</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>175</CountryID>
+	</Locale>
+	<Locale ID="0421">
+		<SName>id-ID</SName>
+		<RefName>Indonesian (Indonesia)</RefName>
+		<KeyboardID>409</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>111</CountryID>
+	</Locale>
+	<Locale ID="085d">
+		<SName>iu-Latn-CA</SName>
+		<RefName>Inuktitut (Latin, Canada)</RefName>
+		<KeyboardID>085D</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>39</CountryID>
+	</Locale>
+	<Locale ID="045d">
+		<SName>iu-Cans-CA</SName>
+		<RefName>Inuktitut (Syllabics, Canada)</RefName>
+		<KeyboardID>045D</KeyboardID>
+		<IsSysLocale>N</IsSysLocale>
+		<CountryID>39</CountryID>
+	</Locale>
+	<Locale ID="083c">
+		<SName>ga-IE</SName>
+		<RefName>Irish (Ireland)</RefName>
+		<KeyboardID>083C</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>68</CountryID>
+	</Locale>
+	<Locale ID="0434">
+		<SName>xh-ZA</SName>
+		<RefName>isiXhosa (South Africa)</RefName>
+		<KeyboardID>0434</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>209</CountryID>
+	</Locale>
+	<Locale ID="0435">
+		<SName>zu-ZA</SName>
+		<RefName>isiZulu (South Africa)</RefName>
+		<KeyboardID>0435</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>209</CountryID>
+	</Locale>
+	<Locale ID="0410">
+		<SName>it-IT</SName>
+		<RefName>Italian (Italy)</RefName>
+		<KeyboardID>410</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>118</CountryID>
+	</Locale>
+	<Locale ID="0810">
+		<SName>it-CH</SName>
+		<RefName>Italian (Switzerland)</RefName>
+		<KeyboardID>410</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>223</CountryID>
+	</Locale>
+	<Locale ID="0411">
+		<SName>ja-JP</SName>
+		<RefName>Japanese (Japan)</RefName>
+		<KeyboardID>e0010411</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>122</CountryID>
+	</Locale>
+	<Locale ID="044b">
+		<SName>kn-IN</SName>
+		<RefName>Kannada (India)</RefName>
+		<KeyboardID>044B</KeyboardID>
+		<IsSysLocale>N</IsSysLocale>
+		<CountryID>113</CountryID>
+	</Locale>
+	<Locale ID="043f">
+		<SName>kk-KZ</SName>
+		<RefName>Kazakh (Kazakhstan)</RefName>
+		<KeyboardID>43f</KeyboardID>
+		<IsSysLocale>N</IsSysLocale>
+		<CountryID>137</CountryID>
+	</Locale>
+	<Locale ID="0453">
+		<SName>km-KH</SName>
+		<RefName>Khmer (Cambodia)</RefName>
+		<KeyboardID>0453</KeyboardID>
+		<IsSysLocale>N</IsSysLocale>
+		<CountryID>40</CountryID>
+	</Locale>
+	<Locale ID="0486">
+		<SName>qut-GT</SName>
+		<RefName>K'iche (Guatemala)</RefName>
+		<KeyboardID>0486</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>99</CountryID>
+	</Locale>
+	<Locale ID="0487">
+		<SName>rw-RW</SName>
+		<RefName>Kinyarwanda (Rwanda)</RefName>
+		<KeyboardID>0487</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>204</CountryID>
+	</Locale>
+	<Locale ID="0441">
+		<SName>sw-KE</SName>
+		<RefName>Kiswahili (Kenya)</RefName>
+		<KeyboardID>0441</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>129</CountryID>
+	</Locale>
+	<Locale ID="0457">
+		<SName>kok-IN</SName>
+		<RefName>Konkani (India)</RefName>
+		<KeyboardID>439</KeyboardID>
+		<IsSysLocale>N</IsSysLocale>
+		<CountryID>113</CountryID>
+	</Locale>
+	<Locale ID="0412">
+		<SName>ko-KR</SName>
+		<RefName>Korean (Korea)</RefName>
+		<KeyboardID>e0010412</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>134</CountryID>
+	</Locale>
+	<Locale ID="0440">
+		<SName>ky-KG</SName>
+		<RefName>Kyrgyz (Kyrgyzstan)</RefName>
+		<KeyboardID>0440</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>130</CountryID>
+	</Locale>
+	<Locale ID="0454">
+		<SName>lo-LA</SName>
+		<RefName>Lao (Lao P.D.R.)</RefName>
+		<KeyboardID>0454</KeyboardID>
+		<IsSysLocale>N</IsSysLocale>
+		<CountryID>138</CountryID>
+	</Locale>
+	<Locale ID="0426">
+		<SName>lv-LV</SName>
+		<RefName>Latvian (Latvia)</RefName>
+		<KeyboardID>10426</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>140</CountryID>
+	</Locale>
+	<Locale ID="0427">
+		<SName>lt-LT</SName>
+		<RefName>Lithuanian (Lithuania)</RefName>
+		<KeyboardID>10427</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>141</CountryID>
+	</Locale>
+	<Locale ID="082e">
+		<SName>dsb-DE</SName>
+		<RefName>Lower Sorbian (Germany)</RefName>
+		<KeyboardID>082E</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>94</CountryID>
+	</Locale>
+	<Locale ID="046e">
+		<SName>lb-LU</SName>
+		<RefName>Luxembourgish (Luxembourg)</RefName>
+		<KeyboardID>046E</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>147</CountryID>
+	</Locale>
+	<Locale ID="042f">
+		<SName>mk-MK</SName>
+		<RefName>Macedonian (Former Yugoslav Republic of Macedonia)</RefName>
+		<KeyboardID>042F</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>19618</CountryID>
+	</Locale>
+	<Locale ID="083e">
+		<SName>ms-BN</SName>
+		<RefName>Malay (Brunei Darussalam)</RefName>
+		<KeyboardID>409</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>37</CountryID>
+	</Locale>
+	<Locale ID="043e">
+		<SName>ms-MY</SName>
+		<RefName>Malay (Malaysia)</RefName>
+		<KeyboardID>409</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>167</CountryID>
+	</Locale>
+	<Locale ID="044c">
+		<SName>ml-IN</SName>
+		<RefName>Malayalam (India)</RefName>
+		<KeyboardID>044C</KeyboardID>
+		<IsSysLocale>N</IsSysLocale>
+		<CountryID>113</CountryID>
+	</Locale>
+	<Locale ID="043a">
+		<SName>mt-MT</SName>
+		<RefName>Maltese (Malta)</RefName>
+		<KeyboardID>043A</KeyboardID>
+		<IsSysLocale>N</IsSysLocale>
+		<CountryID>163</CountryID>
+	</Locale>
+	<Locale ID="0481">
+		<SName>mi-NZ</SName>
+		<RefName>Maori (New Zealand)</RefName>
+		<KeyboardID>0481</KeyboardID>
+		<IsSysLocale>N</IsSysLocale>
+		<CountryID>183</CountryID>
+	</Locale>
+	<Locale ID="047a">
+		<SName>arn-CL</SName>
+		<RefName>Mapudungun (Chile)</RefName>
+		<KeyboardID>047A</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>46</CountryID>
+	</Locale>
+	<Locale ID="044e">
+		<SName>mr-IN</SName>
+		<RefName>Marathi (India)</RefName>
+		<KeyboardID>44e</KeyboardID>
+		<IsSysLocale>N</IsSysLocale>
+		<CountryID>113</CountryID>
+	</Locale>
+	<Locale ID="047c">
+		<SName>moh-CA</SName>
+		<RefName>Mohawk (Mohawk)</RefName>
+		<KeyboardID>047C</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>39</CountryID>
+	</Locale>
+	<Locale ID="0450">
+		<SName>mn-MN</SName>
+		<RefName>Mongolian (Cyrillic, Mongolia)</RefName>
+		<KeyboardID>0450</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>154</CountryID>
+	</Locale>
+	<Locale ID="0850">
+		<SName>mn-Mong-CN</SName>
+		<RefName>Mongolian (Traditional Mongolian, PRC)</RefName>
+		<KeyboardID>0850</KeyboardID>
+		<IsSysLocale>N</IsSysLocale>
+		<CountryID>45</CountryID>
+	</Locale>
+	<Locale ID="0461">
+		<SName>ne-NP</SName>
+		<RefName>Nepali (Nepal)</RefName>
+		<KeyboardID>0461</KeyboardID>
+		<IsSysLocale>N</IsSysLocale>
+		<CountryID>178</CountryID>
+	</Locale>
+	<Locale ID="0414">
+		<SName>nb-NO</SName>
+		<RefName>Norwegian, Bokmål (Norway)</RefName>
+		<KeyboardID>414</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>177</CountryID>
+	</Locale>
+	<Locale ID="0814">
+		<SName>nn-NO</SName>
+		<RefName>Norwegian, Nynorsk (Norway)</RefName>
+		<KeyboardID>414</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>177</CountryID>
+	</Locale>
+	<Locale ID="0482">
+		<SName>oc-FR</SName>
+		<RefName>Occitan (France)</RefName>
+		<KeyboardID>0482</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>84</CountryID>
+	</Locale>
+	<Locale ID="0448">
+		<SName>or-IN</SName>
+		<RefName>Oriya (India)</RefName>
+		<KeyboardID>0448</KeyboardID>
+		<IsSysLocale>N</IsSysLocale>
+		<CountryID>113</CountryID>
+	</Locale>
+	<Locale ID="0463">
+		<SName>ps-AF</SName>
+		<RefName>Pashto (Afghanistan)</RefName>
+		<KeyboardID>0463</KeyboardID>
+		<IsSysLocale>N</IsSysLocale>
+		<CountryID>3</CountryID>
+	</Locale>
+	<Locale ID="0429">
+		<SName>fa-IR</SName>
+		<RefName>Persian</RefName>
+		<KeyboardID>0429</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>116</CountryID>
+	</Locale>
+	<Locale ID="0415">
+		<SName>pl-PL</SName>
+		<RefName>Polish (Poland)</RefName>
+		<KeyboardID>415</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>191</CountryID>
+	</Locale>
+	<Locale ID="0416">
+		<SName>pt-BR</SName>
+		<RefName>Portuguese (Brazil)</RefName>
+		<KeyboardID>416</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>32</CountryID>
+	</Locale>
+	<Locale ID="0816">
+		<SName>pt-PT</SName>
+		<RefName>Portuguese (Portugal)</RefName>
+		<KeyboardID>816</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>193</CountryID>
+	</Locale>
+	<Locale ID="0446">
+		<SName>pa-IN</SName>
+		<RefName>Punjabi (India)</RefName>
+		<KeyboardID>0446</KeyboardID>
+		<IsSysLocale>N</IsSysLocale>
+		<CountryID>113</CountryID>
+	</Locale>
+	<Locale ID="046b">
+		<SName>quz-BO</SName>
+		<RefName>Quechua (Bolivia)</RefName>
+		<KeyboardID>046B</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>26</CountryID>
+	</Locale>
+	<Locale ID="086b">
+		<SName>quz-EC</SName>
+		<RefName>Quechua (Ecuador)</RefName>
+		<KeyboardID>086B</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>66</CountryID>
+	</Locale>
+	<Locale ID="0c6b">
+		<SName>quz-PE</SName>
+		<RefName>Quechua (Peru)</RefName>
+		<KeyboardID>0C6B</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>187</CountryID>
+	</Locale>
+	<Locale ID="0418">
+		<SName>ro-RO</SName>
+		<RefName>Romanian (Romania)</RefName>
+		<KeyboardID>418</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>200</CountryID>
+	</Locale>
+	<Locale ID="0417">
+		<SName>rm-CH</SName>
+		<RefName>Romansh (Switzerland)</RefName>
+		<KeyboardID>0417</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>223</CountryID>
+	</Locale>
+	<Locale ID="0419">
+		<SName>ru-RU</SName>
+		<RefName>Russian (Russia)</RefName>
+		<KeyboardID>419</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>203</CountryID>
+	</Locale>
+	<Locale ID="243b">
+		<SName>smn-FI</SName>
+		<RefName>Sami, Inari (Finland)</RefName>
+		<KeyboardID>243B</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>77</CountryID>
+	</Locale>
+	<Locale ID="103b">
+		<SName>smj-NO</SName>
+		<RefName>Sami, Lule (Norway)</RefName>
+		<KeyboardID>103B</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>177</CountryID>
+	</Locale>
+	<Locale ID="143b">
+		<SName>smj-SE</SName>
+		<RefName>Sami, Lule (Sweden)</RefName>
+		<KeyboardID>143B</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>221</CountryID>
+	</Locale>
+	<Locale ID="0c3b">
+		<SName>se-FI</SName>
+		<RefName>Sami, Northern (Finland)</RefName>
+		<KeyboardID>0C3B</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>77</CountryID>
+	</Locale>
+	<Locale ID="043b">
+		<SName>se-NO</SName>
+		<RefName>Sami, Northern (Norway)</RefName>
+		<KeyboardID>043B</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>177</CountryID>
+	</Locale>
+	<Locale ID="083b">
+		<SName>se-SE</SName>
+		<RefName>Sami, Northern (Sweden)</RefName>
+		<KeyboardID>083B</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>221</CountryID>
+	</Locale>
+	<Locale ID="203b">
+		<SName>sms-FI</SName>
+		<RefName>Sami, Skolt (Finland)</RefName>
+		<KeyboardID>203B</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>77</CountryID>
+	</Locale>
+	<Locale ID="183b">
+		<SName>sma-NO</SName>
+		<RefName>Sami, Southern (Norway)</RefName>
+		<KeyboardID>183B</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>177</CountryID>
+	</Locale>
+	<Locale ID="1c3b">
+		<SName>sma-SE</SName>
+		<RefName>Sami, Southern (Sweden)</RefName>
+		<KeyboardID>1C3B</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>221</CountryID>
+	</Locale>
+	<Locale ID="044f">
+		<SName>sa-IN</SName>
+		<RefName>Sanskrit (India)</RefName>
+		<KeyboardID>439</KeyboardID>
+		<IsSysLocale>N</IsSysLocale>
+		<CountryID>113</CountryID>
+	</Locale>
+	<Locale ID="1c1a">
+		<SName>sr-Cyrl-BA</SName>
+		<RefName>Serbian (Cyrillic, Bosnia and Herzegovina)</RefName>
+		<KeyboardID>c1a</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>25</CountryID>
+	</Locale>
+	<Locale ID="0c1a">
+		<SName>sr-Cyrl-CS</SName>
+		<RefName>Serbian (Cyrillic, Serbia and Montenegro (Former))</RefName>
+		<KeyboardID>0C1A</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>269</CountryID>
+	</Locale>
+	<Locale ID="181a">
+		<SName>sr-Latn-BA</SName>
+		<RefName>Serbian (Latin, Bosnia and Herzegovina)</RefName>
+		<KeyboardID>81a</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>25</CountryID>
+	</Locale>
+	<Locale ID="081a">
+		<SName>sr-Latn-CS</SName>
+		<RefName>Serbian (Latin, Serbia and Montenegro (Former))</RefName>
+		<KeyboardID>081A</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>269</CountryID>
+	</Locale>
+	<Locale ID="046c">
+		<SName>nso-ZA</SName>
+		<RefName>Sesotho sa Leboa (South Africa)</RefName>
+		<KeyboardID>046C</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>209</CountryID>
+	</Locale>
+	<Locale ID="0432">
+		<SName>tn-ZA</SName>
+		<RefName>Setswana (South Africa)</RefName>
+		<KeyboardID>0432</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>209</CountryID>
+	</Locale>
+	<Locale ID="045b">
+		<SName>si-LK</SName>
+		<RefName>Sinhala (Sri Lanka)</RefName>
+		<KeyboardID>045B</KeyboardID>
+		<IsSysLocale>N</IsSysLocale>
+		<CountryID>42</CountryID>
+	</Locale>
+	<Locale ID="041b">
+		<SName>sk-SK</SName>
+		<RefName>Slovak (Slovakia)</RefName>
+		<KeyboardID>41b</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>143</CountryID>
+	</Locale>
+	<Locale ID="0424">
+		<SName>sl-SI</SName>
+		<RefName>Slovenian (Slovenia)</RefName>
+		<KeyboardID>424</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>212</CountryID>
+	</Locale>
+	<Locale ID="2c0a">
+		<SName>es-AR</SName>
+		<RefName>Spanish (Argentina)</RefName>
+		<KeyboardID>80a</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>11</CountryID>
+	</Locale>
+	<Locale ID="400a">
+		<SName>es-BO</SName>
+		<RefName>Spanish (Bolivia)</RefName>
+		<KeyboardID>80a</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>26</CountryID>
+	</Locale>
+	<Locale ID="340a">
+		<SName>es-CL</SName>
+		<RefName>Spanish (Chile)</RefName>
+		<KeyboardID>80a</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>46</CountryID>
+	</Locale>
+	<Locale ID="240a">
+		<SName>es-CO</SName>
+		<RefName>Spanish (Colombia)</RefName>
+		<KeyboardID>80a</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>51</CountryID>
+	</Locale>
+	<Locale ID="140a">
+		<SName>es-CR</SName>
+		<RefName>Spanish (Costa Rica)</RefName>
+		<KeyboardID>80a</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>54</CountryID>
+	</Locale>
+	<Locale ID="1c0a">
+		<SName>es-DO</SName>
+		<RefName>Spanish (Dominican Republic)</RefName>
+		<KeyboardID>80a</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>65</CountryID>
+	</Locale>
+	<Locale ID="300a">
+		<SName>es-EC</SName>
+		<RefName>Spanish (Ecuador)</RefName>
+		<KeyboardID>80a</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>66</CountryID>
+	</Locale>
+	<Locale ID="440a">
+		<SName>es-SV</SName>
+		<RefName>Spanish (El Salvador)</RefName>
+		<KeyboardID>80a</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>72</CountryID>
+	</Locale>
+	<Locale ID="100a">
+		<SName>es-GT</SName>
+		<RefName>Spanish (Guatemala)</RefName>
+		<KeyboardID>80a</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>99</CountryID>
+	</Locale>
+	<Locale ID="480a">
+		<SName>es-HN</SName>
+		<RefName>Spanish (Honduras)</RefName>
+		<KeyboardID>80a</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>106</CountryID>
+	</Locale>
+	<Locale ID="080a">
+		<SName>es-MX</SName>
+		<RefName>Spanish (Mexico)</RefName>
+		<KeyboardID>80a</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>166</CountryID>
+	</Locale>
+	<Locale ID="4c0a">
+		<SName>es-NI</SName>
+		<RefName>Spanish (Nicaragua)</RefName>
+		<KeyboardID>80a</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>182</CountryID>
+	</Locale>
+	<Locale ID="180a">
+		<SName>es-PA</SName>
+		<RefName>Spanish (Panama)</RefName>
+		<KeyboardID>80a</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>192</CountryID>
+	</Locale>
+	<Locale ID="3c0a">
+		<SName>es-PY</SName>
+		<RefName>Spanish (Paraguay)</RefName>
+		<KeyboardID>80a</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>185</CountryID>
+	</Locale>
+	<Locale ID="280a">
+		<SName>es-PE</SName>
+		<RefName>Spanish (Peru)</RefName>
+		<KeyboardID>80a</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>187</CountryID>
+	</Locale>
+	<Locale ID="500a">
+		<SName>es-PR</SName>
+		<RefName>Spanish (Puerto Rico)</RefName>
+		<KeyboardID>80a</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>202</CountryID>
+	</Locale>
+	<Locale ID="0c0a">
+		<SName>es-ES</SName>
+		<RefName>Spanish (Spain, International Sort)</RefName>
+		<KeyboardID>40a</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>217</CountryID>
+	</Locale>
+	<Locale ID="540a">
+		<SName>es-US</SName>
+		<RefName>Spanish (United States)</RefName>
+		<KeyboardID>80a</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>244</CountryID>
+	</Locale>
+	<Locale ID="380a">
+		<SName>es-UY</SName>
+		<RefName>Spanish (Uruguay)</RefName>
+		<KeyboardID>80a</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>246</CountryID>
+	</Locale>
+	<Locale ID="200a">
+		<SName>es-VE</SName>
+		<RefName>Spanish (Venezuela)</RefName>
+		<KeyboardID>80a</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>249</CountryID>
+	</Locale>
+	<Locale ID="081d">
+		<SName>sv-FI</SName>
+		<RefName>Swedish (Finland)</RefName>
+		<KeyboardID>41d</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>77</CountryID>
+	</Locale>
+	<Locale ID="041d">
+		<SName>sv-SE</SName>
+		<RefName>Swedish (Sweden)</RefName>
+		<KeyboardID>41d</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>221</CountryID>
+	</Locale>
+	<Locale ID="045a">
+		<SName>syr-SY</SName>
+		<RefName>Syriac (Syria)</RefName>
+		<KeyboardID>045A</KeyboardID>
+		<IsSysLocale>N</IsSysLocale>
+		<CountryID>222</CountryID>
+	</Locale>
+	<Locale ID="0428">
+		<SName>tg-Cyrl-TJ</SName>
+		<RefName>Tajik (Cyrillic, Tajikistan)</RefName>
+		<KeyboardID>0428</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>228</CountryID>
+	</Locale>
+	<Locale ID="085f">
+		<SName>tzm-Latn-DZ</SName>
+		<RefName>Tamazight (Latin, Algeria)</RefName>
+		<KeyboardID>085F</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>4</CountryID>
+	</Locale>
+	<Locale ID="0449">
+		<SName>ta-IN</SName>
+		<RefName>Tamil (India)</RefName>
+		<KeyboardID>409</KeyboardID>
+		<IsSysLocale>N</IsSysLocale>
+		<CountryID>113</CountryID>
+	</Locale>
+	<Locale ID="0444">
+		<SName>tt-RU</SName>
+		<RefName>Tatar (Russia)</RefName>
+		<KeyboardID>444</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>203</CountryID>
+	</Locale>
+	<Locale ID="044a">
+		<SName>te-IN</SName>
+		<RefName>Telugu (India)</RefName>
+		<KeyboardID>044A</KeyboardID>
+		<IsSysLocale>N</IsSysLocale>
+		<CountryID>113</CountryID>
+	</Locale>
+	<Locale ID="041e">
+		<SName>th-TH</SName>
+		<RefName>Thai (Thailand)</RefName>
+		<KeyboardID>41e</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>227</CountryID>
+	</Locale>
+	<Locale ID="0451">
+		<SName>bo-CN</SName>
+		<RefName>Tibetan (PRC)</RefName>
+		<KeyboardID>0451</KeyboardID>
+		<IsSysLocale>N</IsSysLocale>
+		<CountryID>45</CountryID>
+	</Locale>
+	<Locale ID="041f">
+		<SName>tr-TR</SName>
+		<RefName>Turkish (Turkey)</RefName>
+		<KeyboardID>41f</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>235</CountryID>
+	</Locale>
+	<Locale ID="0442">
+		<SName>tk-TM</SName>
+		<RefName>Turkmen (Turkmenistan)</RefName>
+		<KeyboardID>0442</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>238</CountryID>
+	</Locale>
+	<Locale ID="0422">
+		<SName>uk-UA</SName>
+		<RefName>Ukrainian (Ukraine)</RefName>
+		<KeyboardID>422</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>241</CountryID>
+	</Locale>
+	<Locale ID="042e">
+		<SName>hsb-DE</SName>
+		<RefName>Upper Sorbian (Germany)</RefName>
+		<KeyboardID>042E</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>94</CountryID>
+	</Locale>
+	<Locale ID="0420">
+		<SName>ur-PK</SName>
+		<RefName>Urdu (Islamic Republic of Pakistan)</RefName>
+		<KeyboardID>420</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>190</CountryID>
+	</Locale>
+	<Locale ID="0859">
+		<SName>sd-Arab-PK</SName>
+		<RefName>Sindhi (Islamic Republic of Pakistan)</RefName>
+		<KeyboardID>420</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>190</CountryID>
+	</Locale>
+	<Locale ID="0480">
+		<SName>ug-CN</SName>
+		<RefName>Uyghur (PRC)‎</RefName>
+		<KeyboardID>0480</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>45</CountryID>
+	</Locale>
+	<Locale ID="0843">
+		<SName>uz-Cyrl-UZ</SName>
+		<RefName>Uzbek (Cyrillic, Uzbekistan)</RefName>
+		<KeyboardID>843</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>247</CountryID>
+	</Locale>
+	<Locale ID="0443">
+		<SName>uz-Latn-UZ</SName>
+		<RefName>Uzbek (Latin, Uzbekistan)</RefName>
+		<KeyboardID>409</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>247</CountryID>
+	</Locale>
+	<Locale ID="042a">
+		<SName>vi-VN</SName>
+		<RefName>Vietnamese (Vietnam)</RefName>
+		<KeyboardID>42a</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>251</CountryID>
+	</Locale>
+	<Locale ID="0452">
+		<SName>cy-GB</SName>
+		<RefName>Welsh (United Kingdom)</RefName>
+		<KeyboardID>0452</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>242</CountryID>
+	</Locale>
+	<Locale ID="0488">
+		<SName>wo-SN</SName>
+		<RefName>Wolof (Senegal)</RefName>
+		<KeyboardID>0488</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>210</CountryID>
+	</Locale>
+	<Locale ID="0485">
+		<SName>sah-RU</SName>
+		<RefName>Yakut (Russia)</RefName>
+		<KeyboardID>0485</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>203</CountryID>
+	</Locale>
+	<Locale ID="0478">
+		<SName>ii-CN</SName>
+		<RefName>Yi (PRC)</RefName>
+		<KeyboardID>0478</KeyboardID>
+		<IsSysLocale>N</IsSysLocale>
+		<CountryID>45</CountryID>
+	</Locale>
+	<Locale ID="046a">
+		<SName>yo-NG</SName>
+		<RefName>Yoruba (Nigeria)</RefName>
+		<KeyboardID>046A</KeyboardID>
+		<IsSysLocale>Y</IsSysLocale>
+		<CountryID>175</CountryID>
+	</Locale>
+</Locales>

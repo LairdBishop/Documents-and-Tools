@@ -1,0 +1,7 @@
+<Package>
+	<job id="MDT">
+    	<?job debug="true"?>
+        	<script language="VBScript" src="ZTIUtility.vbs"/>
+        	<script language="VBScript" src="OSD_Core.vbs"/>
+    	</job>
+</Package>
