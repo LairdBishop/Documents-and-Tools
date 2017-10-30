@@ -1,6 +1,0 @@
-2017-09-12-16:14:05:363 [[XLog::CreateLogFile @ XLog.h:  90]]   LOG_SUMMARY: Log Started Hybir Backup Version 4.28.012.R64
-2017-09-12-16:14:05:363 [[CheckStartPath @ XEnvironment.h:  15]]   LOG_SUMMARY: Checking Startup Directory C:\Dell\File Transfer
-2017-09-12-16:14:05:363 [[CheckAppPath @ XEnvironment.h:  34]]   LOG_SUMMARY: Checking Executable Path
-2017-09-12-16:14:05:363 [[CheckAppPath @ XEnvironment.h:  37]]   LOG_SUMMARY: Executable Path C:\Dell\File Transfer\FileTransfer.exe
-2017-09-12-16:14:05:363 [[XEnvironment::XEnvironment @ XEnvironment.h: 385]]   LOG_SUMMARY: Getting OS Environment
-2017-09-12-16:14:05:363 [[XEnvironment::XEnvironment @ XEnvironment.h: 387]]   LOG_SUMMARY: OS: Microsoft Windows 8.1 Enterprise Edition, 64-bit (build 9600)
