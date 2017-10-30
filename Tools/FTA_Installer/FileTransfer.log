@@ -1,0 +1,98 @@
+﻿[2017-08-29 16:25:13,048] [2017-08-29 11:25:13,048] [1] [DEBUG] [ImageUploader] - Launching application.
+[2017-08-29 16:25:13,189] [2017-08-29 11:25:13,189] [1] [DEBUG] [ImageUploader] - Parsing command line arguments.
+[2017-08-29 16:25:13,204] [2017-08-29 11:25:13,204] [1] [INFO ] [ImageUploader] - Args: 
+[2017-08-29 16:25:13,611] [2017-08-29 11:25:13,611] [1] [DEBUG] [ImageUploader] - Checking for elevated permissions.
+[2017-08-29 16:25:15,247] [2017-08-29 11:25:15,247] [1] [DEBUG] [ImageUploader] - Checking for EULA to be accepted.
+[2017-08-29 16:25:15,247] [2017-08-29 11:25:15,247] [1] [INFO ] [ImageUploader] - Started Client Version: 2.4.0.1.
+[2017-08-29 16:25:15,247] [2017-08-29 11:25:15,247] [1] [INFO ] [ImageUploader] - Engine Version: 4.28.012.R64
+[2017-08-29 16:25:15,247] [2017-08-29 11:25:15,247] [1] [INFO ] [ImageUploader] - Session: f47c1306-7327-4847-95ad-97f4e063419e
+[2017-08-29 16:25:19,282] [2017-08-29 11:25:19,282] [7] [DEBUG] [ImageUploader] - Starting check: Getting current location.
+[2017-08-29 16:25:19,429] [2017-08-29 11:25:19,429] [7] [DEBUG] [ImageUploader] - Check Getting current location. took 146 milliseconds
+[2017-08-29 16:25:19,931] [2017-08-29 11:25:19,931] [7] [DEBUG] [ImageUploader] - Starting check: Validating current location.
+[2017-08-29 16:25:20,637] [2017-08-29 11:25:20,637] [7] [DEBUG] [ImageUploader] - Check Validating current location. took 706 milliseconds
+[2017-08-29 16:25:21,139] [2017-08-29 11:25:21,139] [7] [DEBUG] [ImageUploader] - Starting check: Checking client version.
+[2017-08-29 16:25:21,187] [2017-08-29 11:25:21,187] [7] [DEBUG] [ImageUploader] - Check Checking client version. took 47 milliseconds
+[2017-08-29 16:25:44,750] [2017-08-29 11:25:44,750] [1] [INFO ] [ImageUploader] - Main Window closing
+[2017-08-29 16:25:44,941] [2017-08-29 11:25:44,941] [1] [INFO ] [ImageUploader] - CleanUp Hybir.
+[2017-08-29 16:26:07,741] [2017-08-29 11:26:07,741] [1] [DEBUG] [ImageUploader] - Launching application.
+[2017-08-29 16:26:07,788] [2017-08-29 11:26:07,788] [1] [DEBUG] [ImageUploader] - Parsing command line arguments.
+[2017-08-29 16:26:07,788] [2017-08-29 11:26:07,788] [1] [INFO ] [ImageUploader] - Args: 
+[2017-08-29 16:26:07,850] [2017-08-29 11:26:07,850] [1] [DEBUG] [ImageUploader] - Checking for elevated permissions.
+[2017-08-29 16:26:08,335] [2017-08-29 11:26:08,335] [1] [DEBUG] [ImageUploader] - Checking for EULA to be accepted.
+[2017-08-29 16:26:08,366] [2017-08-29 11:26:08,366] [1] [INFO ] [ImageUploader] - Started Client Version: 2.4.0.1.
+[2017-08-29 16:26:08,366] [2017-08-29 11:26:08,366] [1] [INFO ] [ImageUploader] - Engine Version: 4.28.012.R64
+[2017-08-29 16:26:08,366] [2017-08-29 11:26:08,366] [1] [INFO ] [ImageUploader] - Session: 45f2816f-8098-4ae1-8199-d5779e5c8030
+[2017-08-29 16:26:08,413] [2017-08-29 11:26:08,413] [7] [DEBUG] [ImageUploader] - Starting check: Getting current location.
+[2017-08-29 16:26:08,538] [2017-08-29 11:26:08,538] [7] [DEBUG] [ImageUploader] - Check Getting current location. took 109 milliseconds
+[2017-08-29 16:26:09,039] [2017-08-29 11:26:09,039] [7] [DEBUG] [ImageUploader] - Starting check: Validating current location.
+[2017-08-29 16:26:09,133] [2017-08-29 11:26:09,133] [7] [DEBUG] [ImageUploader] - Check Validating current location. took 92 milliseconds
+[2017-08-29 16:26:09,634] [2017-08-29 11:26:09,634] [7] [DEBUG] [ImageUploader] - Starting check: Checking client version.
+[2017-08-29 16:26:09,664] [2017-08-29 11:26:09,664] [7] [DEBUG] [ImageUploader] - Check Checking client version. took 29 milliseconds
+[2017-08-29 17:23:52,926] [2017-08-29 12:23:52,926] [1] [INFO ] [ImageUploader] - Login Failed for:santos_medrano
+[2017-08-29 17:26:05,628] [2017-08-29 12:26:05,628] [1] [INFO ] [ImageUploader] - Login Failed for:santos_medrano@dellteam.com
+[2017-08-29 17:26:24,962] [2017-08-29 12:26:24,962] [4] [INFO ] [ImageUploader] - No email account found in GPT.
+[2017-08-29 17:26:25,058] [2017-08-29 12:26:25,058] [4] [INFO ] [ImageUploader] - No email account found in CTM.
+[2017-08-29 17:26:30,836] [2017-08-29 12:26:30,836] [4] [ERROR] [ImageUploader] - [1001] No SI and Components returned for the given email.
+[2017-08-29 17:26:30,850] [2017-08-29 12:26:30,850] [1] [DEBUG] [ImageUploader] - Client Session KeepAlive Ticks: 0
+[2017-08-29 17:26:30,888] [2017-08-29 12:26:30,888] [1] [INFO ] [ImageUploader] - Reset
+[2017-08-29 17:26:30,904] [2017-08-29 12:26:30,904] [1] [INFO ] [ImageUploader] - Stopping the HybirEngine
+[2017-08-29 17:26:30,909] [2017-08-29 12:26:30,909] [1] [INFO ] [ImageUploader] - Reset
+[2017-08-29 17:26:30,920] [2017-08-29 12:26:30,920] [1] [INFO ] [ImageUploader] - Stopping the HybirEngine
+[2017-08-29 17:38:47,402] [2017-08-29 12:38:47,402] [1] [INFO ] [ImageUploader] - Main Window closing
+[2017-08-29 17:38:47,403] [2017-08-29 12:38:47,403] [1] [INFO ] [ImageUploader] - CleanUp Hybir.
+[2017-08-29 20:28:12,515] [2017-08-29 15:28:12,515] [1] [DEBUG] [ImageUploader] - Launching application.
+[2017-08-29 20:28:12,702] [2017-08-29 15:28:12,702] [1] [DEBUG] [ImageUploader] - Parsing command line arguments.
+[2017-08-29 20:28:12,702] [2017-08-29 15:28:12,702] [1] [INFO ] [ImageUploader] - Args: 
+[2017-08-29 20:28:13,218] [2017-08-29 15:28:13,218] [1] [DEBUG] [ImageUploader] - Checking for elevated permissions.
+[2017-08-29 20:28:13,912] [2017-08-29 15:28:13,912] [1] [DEBUG] [ImageUploader] - Checking for EULA to be accepted.
+[2017-08-29 20:28:13,927] [2017-08-29 15:28:13,927] [1] [INFO ] [ImageUploader] - Started Client Version: 2.4.0.1.
+[2017-08-29 20:28:13,927] [2017-08-29 15:28:13,927] [1] [INFO ] [ImageUploader] - Engine Version: 4.28.012.R64
+[2017-08-29 20:28:13,927] [2017-08-29 15:28:13,927] [1] [INFO ] [ImageUploader] - Session: 7f7c507f-a2ad-49b7-9610-15cfddc3b45a
+[2017-08-29 20:28:13,974] [2017-08-29 15:28:13,974] [7] [DEBUG] [ImageUploader] - Starting check: Getting current location.
+[2017-08-29 20:28:14,178] [2017-08-29 15:28:14,178] [7] [DEBUG] [ImageUploader] - Check Getting current location. took 195 milliseconds
+[2017-08-29 20:28:14,680] [2017-08-29 15:28:14,680] [7] [DEBUG] [ImageUploader] - Starting check: Validating current location.
+[2017-08-29 20:28:14,840] [2017-08-29 15:28:14,840] [7] [DEBUG] [ImageUploader] - Check Validating current location. took 159 milliseconds
+[2017-08-29 20:28:15,340] [2017-08-29 15:28:15,340] [7] [DEBUG] [ImageUploader] - Starting check: Checking client version.
+[2017-08-29 20:28:15,378] [2017-08-29 15:28:15,378] [7] [DEBUG] [ImageUploader] - Check Checking client version. took 36 milliseconds
+[2017-08-29 20:28:53,198] [2017-08-29 15:28:53,198] [7] [INFO ] [ImageUploader] - No email account found in GPT.
+[2017-08-29 20:28:53,273] [2017-08-29 15:28:53,273] [7] [INFO ] [ImageUploader] - No email account found in CTM.
+[2017-08-29 20:28:55,775] [2017-08-29 15:28:55,775] [7] [ERROR] [ImageUploader] - [1001] No SI and Components returned for the given email.
+[2017-08-29 20:28:55,789] [2017-08-29 15:28:55,789] [1] [DEBUG] [ImageUploader] - Client Session KeepAlive Ticks: 0
+[2017-08-29 20:28:55,793] [2017-08-29 15:28:55,793] [1] [INFO ] [ImageUploader] - Reset
+[2017-08-29 20:28:55,794] [2017-08-29 15:28:55,794] [1] [INFO ] [ImageUploader] - Stopping the HybirEngine
+[2017-08-29 20:28:55,819] [2017-08-29 15:28:55,819] [1] [INFO ] [ImageUploader] - Reset
+[2017-08-29 20:28:55,820] [2017-08-29 15:28:55,820] [1] [INFO ] [ImageUploader] - Stopping the HybirEngine
+[2017-08-29 20:29:08,144] [2017-08-29 15:29:08,144] [1] [INFO ] [ImageUploader] - Main Window closing
+[2017-08-29 20:29:08,167] [2017-08-29 15:29:08,167] [1] [INFO ] [ImageUploader] - CleanUp Hybir.
+[2017-08-29 20:31:02,339] [2017-08-29 15:31:02,339] [1] [DEBUG] [ImageUploader] - Launching application.
+[2017-08-29 20:31:02,386] [2017-08-29 15:31:02,386] [1] [DEBUG] [ImageUploader] - Parsing command line arguments.
+[2017-08-29 20:31:02,386] [2017-08-29 15:31:02,386] [1] [INFO ] [ImageUploader] - Args: 
+[2017-08-29 20:31:02,448] [2017-08-29 15:31:02,448] [1] [DEBUG] [ImageUploader] - Checking for elevated permissions.
+[2017-08-29 20:31:02,941] [2017-08-29 15:31:02,941] [1] [DEBUG] [ImageUploader] - Checking for EULA to be accepted.
+[2017-08-29 20:31:02,941] [2017-08-29 15:31:02,941] [1] [INFO ] [ImageUploader] - Started Client Version: 2.4.0.1.
+[2017-08-29 20:31:02,941] [2017-08-29 15:31:02,941] [1] [INFO ] [ImageUploader] - Engine Version: 4.28.012.R64
+[2017-08-29 20:31:02,941] [2017-08-29 15:31:02,941] [1] [INFO ] [ImageUploader] - Session: e5f83090-d3a6-436c-8883-fb4873c3ad6a
+[2017-08-29 20:31:02,988] [2017-08-29 15:31:02,988] [7] [DEBUG] [ImageUploader] - Starting check: Getting current location.
+[2017-08-29 20:31:03,173] [2017-08-29 15:31:03,173] [7] [DEBUG] [ImageUploader] - Check Getting current location. took 175 milliseconds
+[2017-08-29 20:31:03,676] [2017-08-29 15:31:03,676] [7] [DEBUG] [ImageUploader] - Starting check: Validating current location.
+[2017-08-29 20:31:03,776] [2017-08-29 15:31:03,776] [7] [DEBUG] [ImageUploader] - Check Validating current location. took 99 milliseconds
+[2017-08-29 20:31:04,277] [2017-08-29 15:31:04,277] [7] [DEBUG] [ImageUploader] - Starting check: Checking client version.
+[2017-08-29 20:31:04,311] [2017-08-29 15:31:04,311] [7] [DEBUG] [ImageUploader] - Check Checking client version. took 33 milliseconds
+[2017-08-29 20:31:16,906] [2017-08-29 15:31:16,906] [1] [INFO ] [ImageUploader] - Main Window closing
+[2017-08-29 20:31:16,908] [2017-08-29 15:31:16,908] [1] [INFO ] [ImageUploader] - CleanUp Hybir.
+[2017-09-12 21:14:05,128] [2017-09-12 16:14:05,128] [1] [DEBUG] [ImageUploader] - Launching application.
+[2017-09-12 21:14:05,378] [2017-09-12 16:14:05,378] [1] [DEBUG] [ImageUploader] - Parsing command line arguments.
+[2017-09-12 21:14:05,378] [2017-09-12 16:14:05,378] [1] [INFO ] [ImageUploader] - Args: 
+[2017-09-12 21:14:05,535] [2017-09-12 16:14:05,535] [1] [DEBUG] [ImageUploader] - Checking for elevated permissions.
+[2017-09-12 21:14:06,329] [2017-09-12 16:14:06,329] [1] [DEBUG] [ImageUploader] - Checking for EULA to be accepted.
+[2017-09-12 21:14:06,344] [2017-09-12 16:14:06,344] [1] [INFO ] [ImageUploader] - Started Client Version: 2.4.0.1.
+[2017-09-12 21:14:06,344] [2017-09-12 16:14:06,344] [1] [INFO ] [ImageUploader] - Engine Version: 4.28.012.R64
+[2017-09-12 21:14:06,344] [2017-09-12 16:14:06,344] [1] [INFO ] [ImageUploader] - Session: 6617f637-3aab-477f-bab2-37fe4a86858d
+[2017-09-12 21:14:06,407] [2017-09-12 16:14:06,407] [7] [DEBUG] [ImageUploader] - Starting check: Getting current location.
+[2017-09-12 21:14:06,562] [2017-09-12 16:14:06,562] [7] [DEBUG] [ImageUploader] - Check Getting current location. took 148 milliseconds
+[2017-09-12 21:14:07,064] [2017-09-12 16:14:07,064] [7] [DEBUG] [ImageUploader] - Starting check: Validating current location.
+[2017-09-12 21:14:07,181] [2017-09-12 16:14:07,181] [7] [DEBUG] [ImageUploader] - Check Validating current location. took 116 milliseconds
+[2017-09-12 21:14:07,682] [2017-09-12 16:14:07,682] [7] [DEBUG] [ImageUploader] - Starting check: Checking client version.
+[2017-09-12 21:14:07,716] [2017-09-12 16:14:07,716] [7] [DEBUG] [ImageUploader] - Check Checking client version. took 33 milliseconds
+[2017-09-12 21:14:12,094] [2017-09-12 16:14:12,094] [1] [INFO ] [ImageUploader] - Main Window closing
+[2017-09-12 21:14:12,096] [2017-09-12 16:14:12,096] [1] [INFO ] [ImageUploader] - CleanUp Hybir.
